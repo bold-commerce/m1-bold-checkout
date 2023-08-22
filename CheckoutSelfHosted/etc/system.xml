@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <checkout>
+            <groups>
+                <bold_advanced>
+                    <fields>
+                        <self_hosted_template_url>
+                            <label>Template Path</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>21</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <comment><![CDATA[React App URL.]]></comment>
+                        </self_hosted_template_url>
+                    </fields>
+                </bold_advanced>
+            </groups>
+        </checkout>
+    </sections>
+</config>

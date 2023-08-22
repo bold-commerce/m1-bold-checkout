@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<layout>
+    <sales_order_view>
+        <reference name="my.account.wrapper">
+            <block type="bold_checkouttaxexempt/info" after="sales.order.info" name="bold_checkouttaxexempt_info" template="bold/checkouttaxexempt/info.phtml"/>
+        </reference>
+        <reference name="content">
+            <block type="core/messages" name="global_messages" as="global_messages" />
+        </reference>
+    </sales_order_view>
+
+    <checkouttaxexempt_index_view>
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="core/messages" name="global_messages" as="global_messages" />
+            <block type="bold_checkouttaxexempt/info" name="bold_checkouttaxexempt_info" template="bold/checkouttaxexempt/info.phtml"/>
+        </reference>
+    </checkouttaxexempt_index_view>
+</layout>

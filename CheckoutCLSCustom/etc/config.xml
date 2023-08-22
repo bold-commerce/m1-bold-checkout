@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bold_CheckoutCLSCustom>
+            <version>0.0.1</version>
+        </Bold_CheckoutCLSCustom>
+    </modules>
+    <global>
+        <models>
+            <cls_custom>
+                <rewrite>
+                    <observer>Bold_CheckoutCLSCustom_Model_Rewrite_Observer</observer>
+                </rewrite>
+            </cls_custom>
+            <bold_checkout>
+                <rewrite>
+                    <option_formatter>Bold_CheckoutCLSCustom_Model_Rewrite_Option_Formatter</option_formatter>
+                </rewrite>
+            </bold_checkout>
+        </models>
+    </global>
+</config>

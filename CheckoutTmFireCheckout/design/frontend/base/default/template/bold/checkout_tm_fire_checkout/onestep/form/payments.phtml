@@ -1,0 +1,401 @@
+<?php
+/**
+ * Bold Payments iframe.
+ *
+ * @var Bold_Checkout_Block_Form_Payments $this
+ */
+?>
+<div id="bold-payments-container">
+    <iframe id='PIGI' src='' width='100%' scrolling='no' height="0px" frameborder='0'></iframe>
+</div>
+
+<script>
+    BoldClient = Class.create({
+        requestInProgress: false,
+        requestQueue: [],
+        jwtToken: "<?php echo $this->getJwtToken(); ?>",
+        url: "<?php echo $this->getStoreFrontClientUrl(); ?>",
+
+        /**
+         * Initialize BoldClient.
+         */
+        init: function () {
+            window.bold || (window.bold = {});
+            this.address = new BoldAddress();
+            this.customer = new BoldCustomer();
+        },
+
+        /**
+         * Send billing and customer sync requests.
+         *
+         * @param dataType string
+         * @returns {void}
+         * @public
+         */
+        post: function (dataType) {
+            const request = {
+                'dataType': dataType,
+            };
+            this.requestQueue.push(request);
+            this.processNextRequest();
+        },
+
+        /**
+         * Process next request in queue.
+         *
+         * @returns {void}
+         * @private
+         */
+        processNextRequest: function () {
+            if (this.requestInProgress || this.requestQueue.length === 0) {
+                return;
+            }
+            this.requestInProgress = true;
+            const nextRequest = this.requestQueue.shift();
+            let newPayload;
+            let path;
+            switch (nextRequest.dataType) {
+                case 'address' :
+                    path = 'addresses/billing';
+                    newPayload = this.address.getBillingAddress();
+                    break;
+                case 'customer' :
+                    path = window.bold[nextRequest.dataType] ? 'customer' : 'customer/guest';
+                    newPayload = this.customer.getCustomer();
+                    break;
+            }
+            if (!newPayload || this.payloadCompare(newPayload, nextRequest.dataType)) {
+                this.requestInProgress = false;
+                this.processNextRequest();
+                return;
+            }
+            new Ajax.Request(
+                this.url + path,
+                {
+                    method: 'POST',
+                    contentType: 'application/json',
+                    requestHeaders: {
+                        'Authorization': 'Bearer ' + this.jwtToken,
+                        'Content-Type': 'application/json',
+                    },
+                    parameters: Object.toJSON({
+                        _method: window.bold[nextRequest.dataType] ? 'PUT' : 'POST',
+                        ...newPayload
+                    }),
+                    onSuccess: function (transport) {
+                        const response = transport.responseText.evalJSON(true);
+                        window.bold[nextRequest.dataType] = response.data[nextRequest.dataType];
+                        this.requestInProgress = false;
+                        this.processNextRequest();
+                    }.bind(this),
+                    onFailure: function () {
+                        this.requestInProgress = false;
+                        this.processNextRequest();
+                    }.bind(this)
+                }
+            );
+        },
+
+        /**
+         * Compare new payload with saved payload.
+         *
+         * @param newPayload
+         * @param dataType
+         * @return {boolean}
+         * @private
+         */
+        payloadCompare: function (newPayload, dataType) {
+            const savedPayload = window.bold[dataType] || {};
+            for (var key in newPayload) {
+                if (newPayload.hasOwnProperty(key) && key !== 'id' && savedPayload[key] !== newPayload[key]) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+    BoldAddress = Class.create({
+        allowedCountries: <?php echo $this->getAllowedCountries(); ?>,
+        savedBillingAddress: <?php echo $this->getSavedAddresses(); ?>,
+        billingAddressFields: {
+            'first_name': 'billing:firstname',
+            'last_name': 'billing:lastname',
+            'business_name': 'billing:company',
+            'address_line_1': 'billing:street1',
+            'address_line_2': 'billing:street2',
+            'city': 'billing:city',
+            'province': 'billing:region',
+            'province_code': 'billing:region_id',
+            'postal_code': 'billing:postcode',
+            'country_code': 'billing:country_id',
+            'phone_number': 'billing:telephone',
+        },
+
+        /**
+         * Get billing address payload for sync.
+         *
+         * @return object
+         */
+        getBillingAddress: function () {
+            let billingAddressPayload = {};
+            const billingAddressSelect = $('billing-address-select');
+            if (billingAddressSelect && billingAddressSelect.getValue()) {
+                try {
+                    this.savedBillingAddress.forEach(function (address) {
+                        if (address.id === Number(billingAddressSelect.getValue())) {
+                            Object.keys(address).forEach(function (key) {
+                                billingAddressPayload[key] = address[key];
+                            });
+                        }
+                    }.bind(this));
+                    billingAddressPayload['country'] = this.allowedCountries.find(
+                        country => country.value === billingAddressPayload.country_code
+                    ).label;
+                    billingAddressPayload.id = null;
+                    this.validateBillingAddressPayload(billingAddressPayload);
+                } catch (e) {
+                    billingAddressPayload = null;
+                }
+                if (billingAddressPayload) {
+                    return billingAddressPayload;
+                }
+            }
+            try {
+                Object.keys(this.billingAddressFields).forEach(function (key) {
+                    let field = this.billingAddressFields[key];
+                    if ($(field)) {
+                        billingAddressPayload[key] = $(field).value;
+                    }
+                }.bind(this));
+                billingAddressPayload['country'] = this.allowedCountries.find(
+                    country => country.value === billingAddressPayload.country_code
+                ).label;
+                billingAddressPayload.id = null;
+                this.validateBillingAddressPayload(billingAddressPayload);
+            } catch (e) {
+                return null;
+            }
+            return billingAddressPayload;
+        },
+
+        /**
+         * Validate address payload.
+         *
+         * @param payload object
+         * @return void
+         * @throws Error
+         * @private
+         */
+        validateBillingAddressPayload: function (payload) {
+            let requiredFields = [
+                'first_name',
+                'last_name',
+                'postal_code',
+                'phone_number',
+                'country',
+                'address_line_1',
+                'city',
+            ];
+            requiredFields.each(function (field) {
+                if (!payload[field]) {
+                    throw new Error('Missing required field: ' + field);
+                }
+            })
+        }
+    });
+    BoldCustomer = Class.create({
+        customerFields: {
+            'email_address': 'billing:email',
+            'first_name': 'billing:firstname',
+            'last_name': 'billing:lastname',
+        },
+
+        /**
+         * Get customer payload for sync.
+         *
+         * @return object
+         */
+        getCustomer: function () {
+            const customerPayload = {};
+            try {
+                Object.keys(this.customerFields).forEach(function (key) {
+                    let field = this.customerFields[key];
+                    customerPayload[key] = $(field).value;
+                }.bind(this));
+                this.validateCustomerPayload(customerPayload);
+            } catch (e) {
+                return null;
+            }
+            return customerPayload;
+        },
+
+        /**
+         * Validate address payload.
+         *
+         * @param payload object
+         * @return void
+         * @throws Error
+         * @private
+         */
+        validateCustomerPayload: function (payload) {
+            let requiredFields = [
+                'first_name',
+                'last_name',
+                'email_address'
+            ];
+            requiredFields.each(function (field) {
+                if (!payload[field]) {
+                    throw new Error('Missing required field: ' + field);
+                }
+            })
+        }
+    });
+    BoldPayment = Class.create({
+        paymentType: null,
+
+        init: function (boldClient) {
+            const customerIsGuest = <?php echo $this->customerIsGuest() ?>;
+            document.observe('firecheckout:saveBefore', function (event) {
+                const memo = event.memo;
+                this.capturePayment(memo);
+            }.bind(this));
+            window.addEventListener('message', ({data}) => {
+                this.updateIframeHeight(data);
+                const type = data.responseType;
+                if (type) {
+                    switch (type) {
+                        case 'PIGI_INITIALIZED':
+                            break;
+                        case 'PIGI_REFRESH_ORDER':
+                            break;
+                        case 'PIGI_ADD_PAYMENT':
+                            if (!data.payload.success) {
+                                checkout.setLoadWaiting(false);
+                                this.paymentType = null;
+                                return;
+                            }
+                            this.paymentType = data.payload.paymentType;
+                            payment.save();
+                    }
+                }
+            });
+            if (customerIsGuest) {
+                boldClient.post('customer');
+            }
+            boldClient.post('address');
+            const customerFields = [
+                'billing:firstname',
+                'billing:lastname',
+                'billing:email',
+            ];
+            const billingAddressFields = [
+                'billing:firstname',
+                'billing:lastname',
+                'billing:company',
+                'billing:street1',
+                'billing:street2',
+                'billing:city',
+                'billing:region',
+                'billing:region_id',
+                'billing:postcode',
+                'billing:country_id',
+                'billing:telephone',
+                'billing:use_for_shipping_yes'
+            ];
+            if (customerIsGuest) {
+                customerFields.each(function (field) {
+                    $(field).observe('change', function () {
+                        boldClient.post('customer');
+                    });
+                });
+            }
+            billingAddressFields.each(function (field) {
+                if ($(field)) {
+                    $(field).observe('change', function () {
+                        boldClient.post('address');
+                    });
+                }
+            });
+            const iframeUrl = "<?php echo $this->getIframeUrl(); ?>";
+            const boldPaymentsCheckbox = $('p_method_bold');
+            if (!iframeUrl || !boldPaymentsCheckbox) {
+                this.hideBoldPaymentBlock();
+                return;
+            }
+            boldPaymentsCheckbox.checked = false;
+            boldPaymentsCheckbox.observe('change', function () {
+                    if (this.checked) {
+                        const iframeElement = $('PIGI');
+                        iframeElement.src = iframeUrl;
+                        const iframeWindow = iframeElement.contentWindow;
+                        iframeWindow.postMessage({actionType: 'PIGI_REFRESH_ORDER'}, '*');
+                    }
+                }
+            );
+        },
+
+        /**
+         * Place order with bold payment.
+         *
+         * @private
+         * @return void
+         */
+        capturePayment: function (memo) {
+            if (payment.currentMethod && payment.currentMethod !== 'bold') {
+                return;
+            }
+            if (!this.paymentType) {
+                checkout.setLoadWaiting(true);
+                const iframeElement = $('PIGI');
+                const iframeWindow = iframeElement.contentWindow;
+                iframeWindow.postMessage({actionType: 'PIGI_REFRESH_ORDER'}, '*');
+                const clearAction = {actionType: 'PIGI_CLEAR_ERROR_MESSAGES'};
+                const addPaymentAction = {actionType: 'PIGI_ADD_PAYMENT'};
+                iframeWindow.postMessage(clearAction, '*');
+                iframeWindow.postMessage(addPaymentAction, '*');
+                memo.stopFurtherProcessing = true;
+                return;
+            }
+            this.paymentType = null;
+        },
+
+        /**
+         * Hide payment iframe.
+         *
+         * @private
+         */
+        hideBoldPaymentBlock: function () {
+            const dtElements = document.getElementsByTagName('dt') || [];
+            let targetElement;
+            for (let i = 0; i < dtElements.length; i++) {
+                if (dtElements[i].querySelector('#p_method_bold')) {
+                    targetElement = dtElements[i];
+                    break;
+                }
+            }
+            if (targetElement) {
+                targetElement.style.display = 'none';
+            }
+        },
+
+        /**
+         * Update payment iframe height.
+         *
+         * @private
+         * @param {Object} data
+         * @param data
+         */
+        updateIframeHeight: function (data) {
+            const iframeElement = $('PIGI');
+            if (!data.height || iframeElement.style.height === data.height.round() + 'px') {
+                return;
+            }
+            iframeElement.style.height = data.height.round() + 'px';
+        }
+    });
+
+    const boldClient = new BoldClient();
+    const boldPayment = new BoldPayment();
+    boldClient.init();
+    boldPayment.init(boldClient);
+</script>

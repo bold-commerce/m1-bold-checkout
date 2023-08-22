@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<Bold_CheckoutTmFireCheckout>
+			<active>true</active>
+			<codePool>community</codePool>
+			<depends>
+				<Bold_Checkout/>
+				<TM_FireCheckout/>
+			</depends>
+		</Bold_CheckoutTmFireCheckout>
+	</modules>
+</config>

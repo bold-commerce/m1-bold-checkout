@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+        <reference name="cart_sidebar.extra_actions">
+            <block type="bold_checkout/parallel" name="bold.checkout.cart_sidebar.parallel"
+                   template="bold/checkout/parallel/cart.phtml"/>
+        </reference>
+    </default>
+
+    <checkout_cart_index>
+        <reference name="checkout.cart.top_methods">
+            <block type="bold_checkout/parallel" name="checkout.cart.methods.parallel.top"
+                   before="checkout.cart.methods.onepage.top" template="bold/checkout/parallel/top.phtml">
+            </block>
+        </reference>
+
+        <reference name="checkout.cart.methods">
+            <block type="bold_checkout/parallel" name="checkout.cart.methods.parallel.bottom"
+                   before="checkout.cart.methods.onepage.bottom" template="bold/checkout/parallel/bottom.phtml">
+            </block>
+        </reference>
+    </checkout_cart_index>
+
+    <checkout_onepage_paymentmethod>
+        <reference name="root">
+            <action method="setMethodFormTemplate">
+                <method>bold</method>
+                <template>bold/checkout/form/payments.phtml</template>
+            </action>
+        </reference>
+    </checkout_onepage_paymentmethod>
+</layout>

@@ -1,0 +1,20 @@
+<?php if ($this->isParallelCheckoutEnabled()) : ?>
+    <li class="method-checkout-cart-methods-onepage-bottom">
+        <button type="button"
+                title="<?php echo $this->quoteEscape($this->__('Proceed to Bold Checkout')) ?>"
+                class="button btn-proceed-checkout btn-checkout
+                <?php if ($this->isDisabledByQuote()): ?>
+                no-checkout
+                <?php endif; ?>"
+            <?php if ($this->isDisabledByQuote()): ?>
+                disabled="disabled"
+            <?php endif; ?>
+                onclick="window.location='<?php echo $this->escapeUrl($this->getCheckoutUrl()) ?>';">
+            <span>
+                <span>
+                    <?php echo $this->quoteEscape($this->__('Proceed to Bold Checkout')) ?>
+                </span>
+            </span>
+        </button>
+    </li>
+<?php endif; ?>

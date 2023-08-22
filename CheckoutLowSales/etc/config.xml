@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bold_CheckoutLowSales>
+            <version>1.0.0.0</version>
+        </Bold_CheckoutLowSales>
+    </modules>
+    <global>
+        <events>
+            <bold_checkout_order_create_before>
+                <observers>
+                    <bold>
+                        <class>Bold_CheckoutLowSales_Observer_OrderCreateBeforeObserver</class>
+                        <method>setTaxExempt</method>
+                    </bold>
+                </observers>
+            </bold_checkout_order_create_before>
+            <bold_checkout_get_quote_after>
+                <observers>
+                    <bold>
+                        <class>Bold_CheckoutLowSales_Observer_QuoteGetAfterObserver</class>
+                        <method>replaceSessionQuote</method>
+                    </bold>
+                </observers>
+            </bold_checkout_get_quote_after>
+        </events>
+    </global>
+</config>

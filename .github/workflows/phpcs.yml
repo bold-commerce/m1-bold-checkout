@@ -1,0 +1,42 @@
+name: Static testing
+run-name: PHP Code Sniffer action.
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+
+jobs:
+  run-phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP 7.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+
+      - name: Add HTTP basic auth credentials.
+        run: echo '${{ secrets.COMPOSER_AUTH_JSON }}' > $GITHUB_WORKSPACE/auth.json
+
+      - name: Install Magento Extension Quality Program Coding Standard Dependencies.
+        run: |
+          cd $GITHUB_WORKSPACE/Checkout/tests/static
+          composer install
+
+      - name: Remove auth.json file.
+        run: rm -f $GITHUB_WORKSPACE/auth.json
+
+      - name: Calculate git diff.
+        uses: technote-space/get-diff-action@v6
+
+      - name: Perform Coding Standard check.
+        run: |          
+          cd $GITHUB_WORKSPACE
+          CHANGED_FILES=$(git diff --name-only --diff-filter=dr HEAD~1)
+          Checkout/tests/static/vendor/bin/phpcs $CHANGED_FILES --standard=Bold

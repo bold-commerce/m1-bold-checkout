@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bold_CheckoutMyClub>
+            <version>1.0.0.0</version>
+        </Bold_CheckoutMyClub>
+    </modules>
+    <global>
+        <helpers>
+            <catalog>
+                <rewrite>
+                    <myclub>Bold_CheckoutMyClub_Helper_MyClub</myclub>
+                </rewrite>
+            </catalog>
+        </helpers>
+    </global>
+    <frontend>
+        <events>
+            <bold_checkout_line_item_extract_after>
+                <observers>
+                    <bold>
+                        <class>Bold_CheckoutMyClub_Observer_AddClubIdToLineItemsObserver</class>
+                        <method>addClubId</method>
+                    </bold>
+                </observers>
+            </bold_checkout_line_item_extract_after>
+            <bold_checkout_get_quote_after>
+                <observers>
+                    <bold>
+                        <class>Bold_CheckoutMyClub_Observer_AddClubIdObserver</class>
+                        <method>addClubId</method>
+                    </bold>
+                </observers>
+            </bold_checkout_get_quote_after>
+        </events>
+    </frontend>
+</config>

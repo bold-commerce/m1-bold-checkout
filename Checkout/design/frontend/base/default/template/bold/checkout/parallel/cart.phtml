@@ -1,0 +1,14 @@
+<?php
+/**
+ * @var Bold_Checkout_Block_Parallel $this
+ */
+?>
+<?php if ($this->isParallelCheckoutEnabled()) : ?>
+    <li>
+        <a title="<?php echo $this->quoteEscape($this->__('Bold Checkout')) ?>" class="button checkout-button"
+           href="<?php echo $this->escapeUrl($this->getCheckoutUrl()) ?>">
+            <?php echo $this->quoteEscape($this->__('Bold Checkout')) ?>
+        </a>
+        <span class="paypal-or"><?php echo $this->quoteEscape($this->__('-OR-'));?></span>
+    </li>
+<?php endif; ?>

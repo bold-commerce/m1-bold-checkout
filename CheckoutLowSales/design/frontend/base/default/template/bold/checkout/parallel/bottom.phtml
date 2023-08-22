@@ -1,0 +1,55 @@
+<?php if ($this->isParallelCheckoutEnabled()) : ?>
+    <li class="method-checkout-cart-methods-onepage-bottom">
+        <button type="button"
+                title="<?php echo $this->quoteEscape($this->__('Proceed to Bold Checkout')) ?>"
+                class="button btn-proceed-checkout btn-proceed-checkout-parallel btn-checkout
+                <?php if ($this->isDisabledByQuote()): ?>
+                no-checkout
+                <?php endif; ?>"
+            <?php if ($this->isDisabledByQuote()): ?>
+                disabled="disabled"
+            <?php endif; ?>
+               ">
+            <span>
+                <span>
+                    <?php echo $this->quoteEscape($this->__('Proceed to Bold Checkout')) ?>
+                </span>
+            </span>
+        </button>
+        <span class="paypal-or"><?php echo $this->quoteEscape($this->__('-OR-')); ?></span>
+    </li>
+    <script type="text/javascript">
+        //<![CDATA[
+        document.observe('dom:loaded', function(){
+            var checkoutBtn = $$("button.btn-proceed-checkout-parallel");
+            checkoutBtn[0].setAttribute("onclick", "");
+            checkoutBtn[0].stopObserving("click");
+            checkoutBtn.invoke("observe", "click", function(e) {
+                var country = $F('country');
+
+                if (!selectedMethod) {
+                    if (country === "US") {
+                        $$(".shipping-postcode .input-text")[0].addClassName("validation-failed");
+                        alert("Please provide your zip code for a shipping estimate before proceeding to checkout.");
+                        $('low-shipping-container').scrollIntoView();
+
+                        e.preventDefault();
+                        return false;
+                    }
+                } else if (country === "US"
+                    && (Validation.get('IsEmpty').test($$(".shipping-postcode .input-text")[0].value)
+                        || !/(^\d{5}$)/.test($$(".shipping-postcode .input-text")[0].value))) {
+                    $$(".shipping-postcode .input-text")[0].addClassName("validation-failed");
+                    alert("Please provide your zip code for a shipping estimate before proceeding to checkout.")
+                    $('low-shipping-container').scrollIntoView();
+
+                    e.preventDefault();
+                    return false;
+                } else {
+                    window.location = "<?php echo $this->escapeUrl($this->getCheckoutUrl()) ?>";
+                }
+            });
+        });
+        //]]>
+    </script>
+<?php endif; ?>

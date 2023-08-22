@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <bold_checkout_self_hosted_index_index>
+        <reference name="root">
+            <action method="setTemplate"><template>page/bold_checkout.phtml</template></action>
+        </reference>
+        <reference name="content">
+            <block type="bold_checkout_self_hosted/checkout" name="bold_checkout.checkout" template="bold/bold_checkout.phtml"/>
+        </reference>
+    </bold_checkout_self_hosted_index_index>
+</layout>

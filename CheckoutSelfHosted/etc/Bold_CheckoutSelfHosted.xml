@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<Bold_CheckoutSelfHosted>
+			<active>true</active>
+			<codePool>community</codePool>
+			<depends>
+				<Bold_Checkout/>
+			</depends>
+		</Bold_CheckoutSelfHosted>
+	</modules>
+</config>

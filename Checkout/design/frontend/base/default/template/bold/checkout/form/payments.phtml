@@ -1,0 +1,80 @@
+<?php
+/**
+ * Bold Payments iframe.
+ *
+ * @var Bold_Checkout_Block_Form_Payments $this
+ */
+?>
+<?php
+if (!$this->getIframeUrl()) {
+    echo 'Bold Payments are not available.';
+    return;
+}
+?>
+<div id="bold-payments-container">
+    <iframe id='PIGI' src="<?php echo $this->escapeUrl($this->getIframeUrl()) ?>"
+            width='100%' scrolling='no' frameborder='0' style='height: 275px;'></iframe>
+</div>
+<script>
+    const continueButton = document.querySelector('#payment-buttons-container .button');
+    continueButton.removeAttribute('onclick');
+    continueButton.addEventListener('click', function (event) {
+        if (checkout.loadWaiting) {
+            return;
+        }
+        const boldPaymentsCheckbox = document.getElementById('p_method_bold');
+        if (!boldPaymentsCheckbox.checked) {
+            payment.save();
+        }
+        checkout.setLoadWaiting('payment');
+        const iframeElement = document.querySelector('iframe#PIGI');
+        const iframeWindow = iframeElement.contentWindow;
+        const clearAction = {actionType: 'PIGI_CLEAR_ERROR_MESSAGES'};
+        const action = {actionType: 'PIGI_ADD_PAYMENT'};
+        iframeWindow.postMessage(clearAction, '*');
+        iframeWindow.postMessage(action, '*');
+    });
+
+    const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
+    paymentMethodsRadioButtons.forEach(function(radioButton) {
+        radioButton.addEventListener('change', function() {
+            const myRadioButton = document.getElementById('p_method_bold');
+            const paymentIframe = document.getElementById('PIGI');
+            myRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
+        });
+    });
+    document.getElementById('p_method_bold').checked = true;
+    window.addEventListener('message', ({data}) => {
+        updateIframeHeight(data);
+        const type = data.responseType;
+        if (type) {
+            switch (type) {
+                case 'PIGI_INITIALIZED':
+                    break;
+                case 'PIGI_REFRESH_ORDER':
+                    break;
+                case 'PIGI_ADD_PAYMENT':
+                    checkout.setLoadWaiting(false);
+                    if (!data.payload.success) {
+                        return;
+                    }
+                    payment.save();
+            }
+        }
+    });
+
+    /**
+     * Update payment iframe height.
+     *
+     * @private
+     * @param {Object} data
+     * @param data
+     */
+    function updateIframeHeight(data) {
+        const iframeElement = document.querySelector('iframe#PIGI');
+        if (!data.height || iframeElement.style.height === data.height.round() + 'px') {
+            return;
+        }
+        iframeElement.style.height = data.height.round() + 'px';
+    }
+</script>

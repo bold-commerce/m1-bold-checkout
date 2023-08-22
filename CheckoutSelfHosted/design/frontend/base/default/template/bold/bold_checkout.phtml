@@ -1,0 +1,40 @@
+<?php
+/**
+ * Bold checkout self-hosted template.
+ *
+ * @var Bold_CheckoutSelfHosted_Block_Checkout $this
+ *
+ * @phpcs:disable
+ */
+?>
+<?php
+try {
+    $orderData = $this->getOrderData();
+    $orderId = $orderData->data->public_order_id;
+} catch (Exception $e) {
+    echo '<script>window.location.href = "' . $this->escapeUrl($this->getReturnUrl()) . '"</script>';
+    return;
+}
+?>
+
+<script>
+    window.shopAlias = "<?php echo $this->escapeHtml($this->getShopAlias()) ?>";
+    window.customDomain = "<?php echo $this->escapeHtml($this->getCustomDomain()) ?>";
+    window.shopName = "<?php echo $this->escapeHtml($this->getShopName()) ?>";
+    window.returnUrl = "<?php echo $this->escapeUrl($this->getReturnUrl()) ?>";
+    window.loginUrl = "<?php echo $this->escapeUrl($this->getLoginUrl()) ?>";
+    window.headerLogoUrl = "<?php echo $this->escapeUrl($this->getHeaderLogoUrl()) ?>";
+    window.platformType = "bold_platform";
+    window.environment = {
+        type: "production",
+    };
+    window.initializedOrder = {
+        data: <?php echo json_encode($orderData); ?>
+    };
+    window.publicOrderId = "<?php echo $this->escapeHtml($orderId); ?>";
+    window.shopIdentifier = <?php echo '"' . $this->escapeHtml($this->getShopIdentifier()) . '"'; ?>;
+    window.initializedOrder = <?php echo json_encode($orderData); ?>;
+</script>
+<div id='main'>
+    <script src="<?php echo $this->escapeUrl($this->getTemplateUrl())?>"></script>
+</div>
