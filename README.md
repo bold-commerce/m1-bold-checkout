@@ -1,6 +1,3 @@
-# NOTE:
-This project has been archived and moved to https://github.com/bold-commerce/m1-bold-checkout
-
 # Bold Checkout on Magento 1
 
 Bold Checkout is a world-class checkout solution that allows you to maintain PCI compliance on your Magento 1 store without the need to replatform.
