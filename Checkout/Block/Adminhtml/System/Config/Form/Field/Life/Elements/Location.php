@@ -3,14 +3,14 @@
 /**
  * HTML select element block with location options.
  */
-class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_Location
+class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Location
     extends \Mage_Core_Block_Html_Select
 {
     /**
      * Set "name" for <select> element
      *
      * @param string $value
-     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_Location
+     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Location
      */
     public function setInputName($value)
     {

@@ -210,7 +210,10 @@ class Bold_Checkout_Api_Platform_Orders
         $shippingAddress = $orderPayload->shipping_addresses ? current($orderPayload->shipping_addresses) : null;
         if ($shippingAddress) {
             Bold_Checkout_Service_QuoteAddress::updateShippingAddress($shippingAddress, $quote);
-            $quote->getShippingAddress()->setShippingMethod($orderPayload->shipping_code);
+            $quote->getShippingAddress()->setShippingMethod(isset($orderPayload->shipping_code)
+                ? $orderPayload->shipping_code
+                : null
+            );
             $quote->getShippingAddress()->setShippingDescription($orderPayload->shipping_method);
         }
         $quote->getBillingAddress()->setShouldIgnoreValidation(true);

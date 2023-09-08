@@ -5,6 +5,9 @@
  */
 class Bold_Checkout_Api_Platform_AddressValidate
 {
+    /**
+     * @var string[]
+     */
     private static $requiredFields = [
         'first_name',
         'last_name',
@@ -13,7 +16,6 @@ class Bold_Checkout_Api_Platform_AddressValidate
         'country',
         'postal_code',
         'country_code',
-        'phone',
     ];
 
     /**

@@ -28,6 +28,19 @@ class Bold_Checkout_Observer_CheckoutObserver
         ) {
             return;
         }
+        if (!$quote->getCustomerId() && !$quote->isAllowedGuestCheckout()) {
+            Mage::getSingleton('customer/session')->addNotice(
+                Mage::helper('core')->__(
+                    'Sorry, guest checkout is not available. Please log in or register.'
+                )
+            );
+            Mage::app()->getResponse()->setRedirect(Mage::getUrl('customer/account/login'));
+            $event
+                ->getEvent()
+                ->getControllerAction()
+                ->setFlag('', Mage_Core_Controller_Front_Action::FLAG_NO_DISPATCH, true);
+            return;
+        }
         /** @var Bold_Checkout_Model_Config $boldConfig */
         $boldConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         $websiteId = $quote->getStore()->getWebsiteId();
@@ -35,7 +48,7 @@ class Bold_Checkout_Observer_CheckoutObserver
         try {
             $checkoutData = Bold_Checkout_Api_Bold_Orders_BoldOrder::init($quote);
             if ($boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
-                Mage::getSingleton('checkout/session')->setBoldCheckoutData($checkoutData);
+                $checkoutSession->setBoldCheckoutData($checkoutData);
                 return;
             }
             $orderId = $checkoutData->data->public_order_id;
@@ -44,24 +57,17 @@ class Bold_Checkout_Observer_CheckoutObserver
             $checkoutUrl .= '/bold_platform/' . $checkoutData->data->initial_data->shop_name
                 . '/experience/resume?public_order_id=' . $orderId . '&token=' . $token;
             Mage::app()->getResponse()->setRedirect($checkoutUrl);
-        } catch (\Exception $exception) {
-            if ($boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
-                $checkoutSession->setBoldCheckoutData(null);
-                return;
-            }
-            $checkoutSession->addError(
-                Mage::helper('core')->__(
-                    'There was an error during checkout. Please contact us or try again later.'
-                )
-            );
-            Mage::app()->getResponse()->setRedirect('/');
-        } finally {
             if (!$boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
                 $event
                     ->getEvent()
                     ->getControllerAction()
                     ->setFlag('', Mage_Core_Controller_Front_Action::FLAG_NO_DISPATCH, true);
             }
+        } catch (\Exception $exception) {
+            if ($boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
+                $checkoutSession->setBoldCheckoutData(null);
+            }
+            Mage::log($exception->getMessage(), Zend_Log::CRIT);
         }
     }
 

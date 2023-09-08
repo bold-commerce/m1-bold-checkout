@@ -3,21 +3,21 @@
 /**
  * "Lightweight Frontend Experience (LiFE) Elements" dynamic row.
  */
-class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements
+class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements
     extends Mage_Adminhtml_Block_System_Config_Form_Field_Array_Abstract
 {
     /**
-     * @var Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_Location
+     * @var Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Location
      */
     private $locationRenderer;
 
     /**
-     * @var Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_InputType
+     * @var Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Type
      */
     private $inputTypeRenderer;
 
     /**
-     * @var Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_InputRequired
+     * @var Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Required
      */
     private $inputRequiredRenderer;
 
@@ -117,7 +117,7 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements
     /**
      * Retrieve renderer for location element.
      *
-     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_Location
+     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Location
      */
     private function getLocationRenderer()
     {
@@ -135,13 +135,13 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements
     /**
      * Retrieve renderer for input type element.
      *
-     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_InputType
+     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Type
      */
     private function getInputTypeRenderer()
     {
         if (!$this->inputTypeRenderer) {
             $this->inputTypeRenderer = $this->getLayout()->createBlock(
-                'bold_checkout/adminhtml_system_config_form_field_life_elements_inputtype',
+                'bold_checkout/adminhtml_system_config_form_field_life_elements_type',
                 '',
                 ['is_render_to_js_template' => true]
             );
@@ -153,13 +153,13 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements
     /**
      * Retrieve renderer for input required element.
      *
-     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_LIfe_Elements_InputRequired
+     * @return Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Required
      */
     private function getInputRequiredRenderer()
     {
         if (!$this->inputRequiredRenderer) {
             $this->inputRequiredRenderer = $this->getLayout()->createBlock(
-                'bold_checkout/adminhtml_system_config_form_field_life_elements_inputrequired',
+                'bold_checkout/adminhtml_system_config_form_field_life_elements_required',
                 '',
                 ['is_render_to_js_template' => true]
             );

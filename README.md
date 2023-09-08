@@ -1,418 +1,147 @@
-# Installation:
+# NOTE:
+This project has been archived and moved to https://github.com/bold-commerce/m1-bold-checkout
 
-### Base Checkout module installation.
-1. see README.md in Bold/Checkout.
-### Bold Checkout Tax Exemption module installation.
-1. see README.md in Bold/CheckoutTaxExempt.
-### Self hosted with React App module installation.
-1. see README.md in Bold/CheckoutSelfHosted.
-### In case Magento has CLS_Custom module is installed.
-1.  Install Bold/CheckoutCLSCustom. See README.md in Bold/CheckoutCLSCustom.
-### In case Magento has Low_Sales module is installed.
-1.  Install Bold/CheckoutLowSales.. See README.md in Bold/CheckoutLowSales.
-### In case Magento ha MageCoders_PaypalMulticurrency module is installed.
-1.  Install Bold/CheckoutMageCodersPaypalMulticurrency. See README.md in Bold/CheckoutMageCodersPaypalMulticurrency.
-### In case Magento has MageWorx_MultiFees module is installed.
-1.  Install Bold/CheckoutMageWorxMultiFees. See README.md in Bold/CheckoutMageWorxMultiFees.
-### In case Magento has Smartwave_OnepageCheckout module is installed.
-1. Install Bold/CheckoutMageWorxMultiFees module first.(This dependency will be removed in the future).
-2. Install Bold/CheckoutSmartwaveOnepageCheckout. See README.md in Bold/CheckoutSmartwaveOnepageCheckout.
-### In case Magento has TM_FireCheckout module is installed.
-1. Install Bold/CheckoutTMFireCheckout. See README.md in Bold/CheckoutTMFireCheckout.
-### In case Magento has TM_OrderAttachment module is installed.
-1. Install Bold/CheckoutTaxExempt first.
-2. Install Bold/CheckoutTMOrderAttachment. See README.md in Bold/CheckoutTMOrderAttachment.
-    
-<h1 id="configuration">Configuration Panel: </h1>
-Basic Bold Checkout Integration Configuration located in Magento admin area "System > Configuration > Sales > Checkout > Bold Checkout Integration".
-<ul>
-    <li>
-        "Enable Bold Checkout" - If this configuration is set to "Yes" and configuration is saved
-            <ul>
-                <li>
-                    Category, product, customer entities will be automatically synchronized with Bold checkout in case ones are saved. 
-                </li>
-                <li>
-                    Destinations customer, products and orders will be created or updated(in case Magento base url has been changed). 
-                </li>
-                <li>
-                    Overrides for shipping, taxes and discounts will be created or updated(in case store base url has been changed).
-                </li>
-                <li>
-                    Webhook for orders will be registered.
-                </li>
-                <li>
-                    Magento checkout will be replaced with bold checkout.
-                </li>
-                <li>
-                    Orders created via Bold Checkout can be invoiced, refunded using Bold Payment system.
-                </li>
-            </ul>
-    </li>   
-    <li>
-        "API Token" - Encrypted Bold Checkout api token used for all outgoing api calls for Bold Checkout. Generated during store creation on Bold side.
-    </li>
-    <li>
-        "Secret Key" - Encrypted Bold Checkout secret key used for all incoming api calls authorization from Bold Checkout. Generated during store creation on Bold side.
-    </li>
-</ul>
+# Bold Checkout on Magento 1
 
-Advanced Bold Checkout Integration Configuration located in Magento admin area "System > Configuration > Sales > Checkout > Bold Checkout Integration Advanced".
-<ul>
-    <li>
-    "Enabled For" - This configuration is responsible for Bold Checkout limitation. 
-            <ul>
-                <li>
-                    If it set for "All" - all customers will be redirected to Bold Checkout instead of native Magento checkout. 
-                </li>
-                <li>
-                    "Specific IPs" - only customers with listed ips will be redirected to Bold Checkout. Other customers will be redirected to native Magento checkout.
-                </li>
-                <li>
-                    "Specific Customers" - only customers with listed emails will be redirected to Bold Checkout. 
-                </li>
-                <li>
-                    "Percentage of Orders" - system will try to redirect to Bold Checkout only specified percentage of carts.
-                </li>
-            </ul>
-    </li>
-    <li>
-        "Enable Real-Time Synchronization"
-            <ul>
-                <li>
-                    "Yes" - Categories, customers and products will be synchronized with Bold Checkout during saving process.
-                </li>
-                <li>
-                    "No" - <b>Note: Cron jobs should be run.</b> Categories, customers and products will be synchronized with Bold Checkout later by cron job after ones have been saved.
-                           1 minute or bigger sync lag can occur.
-                </li>
-            </ul>
-    </li>
-    <li>
-        "API Url" - Bold Checkout api url. Should not be changed without significant reason.
-    </li>
-    <li>
-        "Checkout Url" - Bold Checkout url. Should not be changed without significant reason.
-    </li>
-    <li>
-        "Weight Unit" - Weight unit used during product synchronization with Bold Checkout.
-    </li>
-    <li>
-        "Weight Unit Conversion Rate To Grams" - Conversion rate to get product weight in grams. Should be changed accordingly to "Weight Unit" configuration. 
-        Used for product synchronization with Bold Checkout.
-    </li>
-</ul>
+Bold Checkout is a world-class checkout solution that allows you to maintain PCI compliance on your Magento 1 store without the need to replatform.
 
+Adobe [ended support](https://business.adobe.com/blog/basics/support-magento-1-software-ends-june-30-2020) for their Magento 1.x ecommerce platform on June 30, 2020. Since that date, Magento 1 merchants have been responsible for their own security and fraud compliance.
 
-<h1>Checkout Workflow: </h1>
-<ol>
-   <li>
-      Customer clicks "Checkout" button in mini-cart or "Proceed to Checkout" button on the cart page.
-      <ol>
-         <li>
-            Magento verifies the cart for ability to use Bold Checkout.<br>
-            Cart cannot be used with Bold Checkout in case:
-            <ul>
-               <li>
-                  Bold/Checkout module is disabled.
-               </li>
-               <li>
-                  Cart is limited by configuration setting "Enabled For" described in <a href="#configuration">Configuration Section</a>.
-               </li>
-               <li>
-                  There is bundle product in the cart.
-               </li>
-               <li>
-                  Cart has item with decimal quantity.
-               </li>
-               <li>
-                  Magento configured to calculate taxes based on billing address.
-               </li>
-               <li>
-                  Magento configured to calculate prices including taxes.
-               </li>
-               <li>
-                  Magento configured to calculate taxes before applying discounts.
-               </li>
-            </ul>
-         </li>
-        <li>
-            Magento sends <a href="https://developer.boldcommerce.com/default/api/orders#tag/Orders/operation/InitializeOrder">init order request</a> with all items in the cart and discounts applied to the cart including discount rules using discount codes.<br>
-            <b>Note: </b>Sometimes "There was an error during checkout. Please contact us or try again later." error may appear during checkout init.
-            This may occur due to some of the products in the cart are not synchronized with Bold Checkout.
-            In this case product(s) should be re-saved in admin area. If "Enable Real-Time Synchronization" is set to "No", please also make sure the Cron is running.
-        </li>
-        <li>
-            In case customer is not a guest customer Magento sends <a href="https://developer.boldcommerce.com/default/api/orders#tag/Customers/operation/CreateAuthenticatedCustomer">authorization request</a> with customer data(email, first name, last name) and available addresses.
-        </li>
-        <li>
-            Magento redirects customer to Bold Checkout page.
-        </li>
-      </ol>
-    </li>
-    <li>
-         Bold checkout calls <a href="https://developer.boldcommerce.com/default/guides/checkout/api-overrides#inventory">inventory override</a>(Overrides are described in <a href="#overrides">Overrides Section</a>) to verify that requested product qty is available.
-    </li>
-    <li>
-      Customer fills all necessary address data on Bold Checkout page and clicks "Continue to Shipping Methods" button.
-    </li>
-    <li>
-        Optional: In case customer applies discount code on Bold Checkout Page, <a href="https://developer.boldcommerce.com/default/guides/checkout/api-overrides#inventory">discount override</a> is called.
-    </li>
-    <li>Bold Checkout sends two requests to Magento:
-        <ol>
-            <li>
-                <a href="https://developer.boldcommerce.com/default/guides/checkout/api-overrides#shipping">Shipping override</a> - to calculate all available shipping methods with prices for given cart.
-            </li>
-            <li>
-                <a href="https://developer.boldcommerce.com/default/guides/checkout/api-overrides#inventory">Tax override</a> - to calculate all available taxes applied for given cart.
-            </li>
-        </ol>
-    </li>
-    <li>
-        Customer is redirected to shipping methods page.
-    </li>
-    <li>
-        Customer selects shipping method and clicks "Continue to Payment Methods".
-    </li>
-    <li>
-        Customer is redirected to Payment Methods Page.
-    </li>
-    <li>
-        Customer selects payment method and clicks "Complete Order".
-    </li>
-    <li>
-        Bold Checkout sends request to Magento <a href="https://developer.boldcommerce.com/default/guides/checkout/api-overrides#inventory">inventory override</a>.
-    </li>
-    <li>
-        (Guest Customer only) Bold Checkout sends get Customer by e-mail request to Magento.
-    </li>
-    <li>
-        (Guest Customer only) If no Customer found by e-mail, Bold sends a create Customer request to Magento.
-    </li>
-    <li>
-        (Guest Customer only) Magento creates the Customer and sends a <a href="https://developer.boldcommerce.com/default/api/platform-event-notifications#tag/Customer-Event-Notifications/operation/CustomerSavedEventNotification">Customer Saved</a> notification to Bold.
-    </li>
-    <li>
-        Bold Checkout sends request to Magento <a href="https://developer.boldcommerce.com/default/api/platform-connector#tag/Orders/operation/CreateOrder">order create</a> destination.
-    </li>
-    <ol>
-        <li>
-            Magento verifies request payload has all necessary order information.
-        </li>
-        <li>
-            Magento finds active customer cart for this checkout session and updates this cart with all necessary data like: shipping|billing address, payment method, customer id.
-        </li>
-        <li>
-            Order is placed using customer cart. Order email sent to customer, cart is disabled.
-        </li>
-        <li>
-            In case "Set up delayed payment capture" is disable in Bold Cashier App, invoice is created.
-        </li>
-        <li>
-            Order's total is verified against Bold payment transaction amount. In case totals are different, comment with amount difference information is added to the order.
-        </li>
-        <li>
-            Created order data is sent back to Bold Checkout.
-        </li>
-    </ol>
-    <li>
-        Bold Checkout sends update order statuses request to Magento <a href="https://developer.boldcommerce.com/default/api/platform-connector#tag/Orders/operation/UpdateOrder">update order</a> destination.
-    </li>
-    <li>
-        If the Order was successfully created on the Magento side, Bold sends the  Webhook "order/created" request to Magento. Please see the <a href="#webhooks">Webhooks Section</a> for details.
-    </li>
-</ol>
+Bold Checkout provides a flexible solution to allow you to maintain your store security and continue using Magento 1. Bold Checkout on Magento 1 is implemented using a [_platform connector_](https://developer.boldcommerce.com/guides/platform-connector).
 
-<h1 id="overrides">Overrides: </h1>
-<ul>
-    <li>
-        <a href="https://developer.boldcommerce.com/default/guides/checkout/api-overrides#shipping">Shipping override</a> - replaces Bold Checkout available shipping methods with Magento shipping methods.
-        Receives shipping address data and line items data with cart id from Bold Checkout. 
-        Finds active cart by cart id, updates cart shipping address and recalculate cart to get available shipping methods and prices.
-        Returns array with available shipping methods.
-        Every shipping method has data: shipping method title, shipping method code, shipping method price
-    </li>
-</ul>
+This document includes basic installation and configuration instructions, as well as how the platform connector works and debugging solutions.
 
-<h1 id="webhooks">Webhooks: </h1>
-<p><a href="https://developer.boldcommerce.com/default/guides/checkout/webhooks">Webhooks</a> are registered at the moment of the Bold Checkout Integration configuration save.</p>
-<p>Currently module is using only one Webhook, called on `order/created` event. This Webhook is used for the Customer newsletter subscription, and should be removed in case the Customer newsletter subscription data is sent with Order creation call.</p>
+## Installation
 
-<h1>Additional modules</h1>
-<ul>
-    <li>
-        Bold/CheckoutCLSCustom - adapts product options to human readable format on bold checkout page.
-        Prevents errors when CLSCustom module tries to distinguish browser on api calls.
-    </li>
-    <li>
-        Bold/CheckoutMageWorxMultiFees - adapts wageworx multi fees for Bold Checkout.
-    </li> 
-    <li>
-        Bold/CheckoutSmartwaveOnepageCheckout - integrates Bold Checkout into Smartwave onepage checkout.
-    </li>
-</ul>
+To install Bold Checkout on Magento 1, follow the instructions in the [Bold Help Center](https://support.boldcommerce.com/hc/en-us/articles/16254826518164-Installation-Guide-for-Bold-Checkout).
 
-<h1>Compatibility confirmed with</h1>
-<ul>
-    <li>Affirm/Affirm</li>
-    <li>Affirm/AffirmPromo</li>
-    <li>Amasty/Base</li>
-    <li>Amasty/Geoip</li>
-    <li>Amasty/Orderattr</li>
-    <li>Amasty/PaymentDetect</li>
-    <li>Amasty/Preorder</li>
-    <li>Amasty/Scheckout</li>
-    <li>Aoe/CacheCleaner</li>
-    <li>Aoe/FilePicker</li>
-    <li>Aoe/QuoteCleaner</li>
-    <li>Aoe/Scheduler</li>
-    <li>Apptrian/ImageOptimizer</li>
-    <li>Apptrian/Minify</li>
-    <li>Aschroder/SMTPPro</li>
-    <li>AW/Afptc</li>
-    <li>AW/All</li>
-    <li>AW/Core</li>
-    <li>AW/Helpdeskultimate</li>
-    <li>AW/Pmatch</li>
-    <li>AW/Productupdates</li>
-    <li>AW/Rma</li>
-    <li>AW/Zblocks</li>
-    <li>Bitpay/Core</li>
-    <li>Bread/BreadCheckout</li>
-    <li>Bss/DeleteOrder</li>
-    <li>CartFee/Edit</li>
-    <li>Ced/Amazon</li>
-    <li>Ced/Googleexpress</li>
-    <li>Ced/Newegg</li>
-    <li>Ced/Neweggb2b</li>
-    <li>Ced/Walmart</li>
-    <li>Cm/RedisSession</li>
-    <li>Collinsharper/Wiretransfer</li>
-    <li>CommerceExtensions/GuestToReg</li>
-    <li>Dwolla/DwollaPaymentModule</li>
-    <li>EmPayTech/GetFinancing</li>
-    <li>Ess/M2ePro</li>
-    <li>Flurrybox/EnhancedPrivacy</li>
-    <li>Gene/Braintree</li>
-    <li>GoIvvy/UspsPatch</li>
-    <li>Hm/Testimonial</li>
-    <li>Inchoo/InvalidatedBlockCacheFix</li>
-    <li>Infomodus/Caship</li>
-    <li>Infomodus/Dhllabel</li>
-    <li>Infomodus/Fedexlabel</li>
-    <li>Infomodus/Upsap</li>
-    <li>Infomodus/Upslabel</li>
-    <li>Itembase/Plugin</li>
-    <li>Low/Sales</li>
-    <li>LUKA/GoogleAdWords</li>
-    <li>Mage/All</li>
-    <li>Mage/Api</li>
-    <li>Mage/Api2</li>
-    <li>Mage/Authorizenet</li>
-    <li>Mage/Bundle</li>
-    <li>Mage/Captcha</li>
-    <li>Mage/Centinel</li>
-    <li>Mage/Compiler</li>
-    <li>Mage/ConfigurableSwatches</li>
-    <li>Mage/Connect</li>
-    <li>Mage/CurrencySymbol</li>
-    <li>Mage/Downloadable</li>
-    <li>Mage/GoogleShopping</li>
-    <li>Mage/GoogleShoppingxml</li>
-    <li>Mage/ImportExport</li>
-    <li>Mage/Oauth</li>
-    <li>Mage/PageCache</li>
-    <li>Mage/Persistent</li>
-    <li>Mage/Weee</li>
-    <li>Mage/Widget</li>
-    <li>Mage/XmlConnect</li>
-    <li>Mageplace/Callforprice</li>
-    <li>MagePsycho/Easypathhints</li>
-    <li>MageWorx/AccountOrdersStatus</li>
-    <li>MageWorx/Adminhtml</li>
-    <li>MageWorx/All</li>
-    <li>MageWorx/CustomerCredit</li>
-    <li>MageWorx/CustomerLocation</li>
-    <li>MageWorx/CustomOptions</li>
-    <li>MageWorx/CustomPrice</li>
-    <li>MageWorx/GeoIP</li>
-    <li>MageWorx/InstantCart</li>
-    <li>MageWorx/MageBox</li>
-    <li>MageWorx/MultiFees</li>
-    <li>MageWorx/OrdersBase</li>
-    <li>MageWorx/OrdersGrid</li>
-    <li>MageWorx/SeoAll</li>
-    <li>MageWorx/SeoBase</li>
-    <li>MageWorx/SeoBreadcrumbs</li>
-    <li>MageWorx/SeoCrossLinks</li>
-    <li>MageWorx/SeoExtended</li>
-    <li>MageWorx/SeoMarkup</li>
-    <li>MageWorx/SeoRedirects</li>
-    <li>MageWorx/SeoReports</li>
-    <li>MageWorx/SeoSuiteUltimate</li>
-    <li>MageWorx/SeoXTemplates</li>
-    <li>MageWorx/StoreSwitcher</li>
-    <li>MageWorx/XSitemap</li>
-    <li>Magpleasure/Paypalcurrency</li>
-    <li>Maven/Html5uploader</li>
-    <li>MDN/ExtensionConflict</li>
-    <li>MT/ElasticSearch</li>
-    <li>MW/HelpDesk</li>
-    <li>OnePica/AvaTax</li>
-    <li>Ophirah/Core</li>
-    <li>Ophirah/Crmaddon</li>
-    <li>Ophirah/CustomProducts</li>
-    <li>Ophirah/Qquoteadv</li>
-    <li>Ophirah/RequestNotification</li>
-    <li>PayItSimple/Payment</li>
-    <li>PayTomorrow/PayTomorrow</li>
-    <li>Phoenix/Moneybookers</li>
-    <li>RocketWeb/All</li>
-    <li>RocketWeb/ShoppingFeeds</li>
-    <li>SafeMage/Extensions</li>
-    <li>SafeMage/ImageOtimization</li>
-    <li>SafeMage/ReCaptcha3</li>
-    <li>SafeMage/TimelessReindex</li>
-    <li>SimpleRelevance/Integration</li>
-    <li>Staylime/Backorders</li>
-    <li>Staylime/Onsale</li>
-    <li>TM/FireCheckout</li>
-    <li>Webtex/CustomerGroupsPrice1</li>
-    <li>Yireo/CheckoutTester</li>
-    <li>Yoast/CanonicalUrl</li>
-    <li>Yoast/MetaRobots</li>
-    <li>Zendesk/Zendesk</li>
-</ul>
+## Configuration
 
-<h1>Debugging: </h1>
-<p>You can find logs about all income and outcome requests from/to Bold Checkout in system.log.
-In case you cannot see some logs, e.g. product sync request - probably website is not in developer mode. 
-In this case navigate to Magento admin area <b>System > Configuration > Developer > Log Setting > Enabled = Yes</b></p>
-<p>Some of the useful queries to verify data:</p>
-<ul>
-    <li>
-        To get product data on Bold side: <br>
-        GET https://api.boldcommerce.com/products/v2/shops/{{shop_id}}/products/pid/{{magento_product_id}}?deep=true <br>
-        Headers: <br>
-            Authorization: Bearer {{api_token}}
-    </li>
-    <li>
-        To get customer data on Bold side: <br>
-        GET https://api.boldcommerce.com/customers/v2/shops/{{shop_id}}/customers/pid/{{magento_customer_id}} <br>
-        Headers: <br>
-            Authorization: Bearer {{api_token}}
-    </li>
-    <li>
-        To get overrides data on Bold side: <br>
-        GET https://api.boldcommerce.com/checkout/shop/{{shopId}}/overrides <br>
-        Headers: <br>
-            Authorization: Bearer {{api_token}}
-    </li>
-    <li>
-        To get destinations data on Bold side: <br>
-        GET https://api.boldcommerce.com/integrations/v1/shops/{{shopId}}/platform_connector_destinations <br>
-        Headers: <br>
-            Authorization: Bearer {{api_token}}
-    </li>
-</ul>
+Basic configuration for the Bold Checkout Integration is located in the Magento admin. Navigate to **System** > **Configuration** > **Sales** > **Checkout** > **Bold Checkout Integration**.
+
+![M1 Bold Checkout Integration Configuration](/.github/M1_Integration_Config.png)
+
+The following list outlines the impacts of each configuration:
+
+1. **Enable Bold Checkout** - If this configuration is set to "Yes" and configuration is saved, then the following is true:
+   1. Category, product, and customer entities are automatically synchronized with Bold Checkout when saved on Magento.
+   1. [Destinations](https://developer.boldcommerce.com/api/platform-connector-destinations#tag/Platform-Connector-Destinations) for customer, products, and orders are created or updated (in case the Magento base URL was changed).
+   1. [Overrides](https://developer.boldcommerce.com/guides/checkout/api-overrides) for shipping, taxes, and discounts are created or updated (in case the store base URL was changed).
+   1. [Webhooks](https://developer.boldcommerce.com/guides/checkout/webhooks) for orders are registered.
+   1. [Zones](https://developer.boldcommerce.com/guides/getting-started/glossary#zone) for warehouse, shipping, and tax are created in Bold Checkout.
+   1. Bold Checkout replaces Magento checkout.
+   1. Orders created via Bold Checkout can be invoiced and refunded using Bold Checkout.
+1. **API Token** - An encrypted Bold Checkout API token used for all outgoing API calls for Bold Checkout. [Generated in the Bold Account Center](https://support.boldcommerce.com/hc/en-us/articles/15975652843284-Create-an-API-Access-Token-in-Account-Center).
+1. **Secret Key** - An encrypted Bold Checkout secret key used for all incoming API calls authorization from Bold Checkout. [Generated in the Bold Account Center](https://support.boldcommerce.com/hc/en-us/articles/15975652843284-Create-an-API-Access-Token-in-Account-Center).
+
+Advanced configuration for the Bold Checkout Integration is located in the Magento admin. Navigate to **System** > **Configuration** > **Sales** > **Checkout** > **Bold Checkout Integration Advanced**.
+
+![M1 Bold Checkout Advanced Integration Configuration](/.github/M1_Advanced_Integration_Config.png)
+
+The following list outlines the impacts of each configuration:
+
+1. **Enabled For** - This configuration limits the Bold Checkout process to certain audiences.
+   1. **All** - All customers are redirected to Bold Checkout instead of native Magento checkout.
+   1. **Specific IPs** - Only customers with listed IP addresses are redirected to Bold Checkout. All other customers continue to see Magento checkout. This setting is useful for testing Bold Checkout on the store.
+   1. **Specific Customers** - Only customers with listed emails are redirected to Bold Checkout. All other customers continue to see Magento checkout. This setting is useful for testing Bold Checkout on the store.
+   1. **Percentage of Orders** - The system redirects a specified percentage of customers to Bold Checkout.
+1. **Enable Real-Time Synchronization** - Bold strongly recommends setting this value to **Yes** to ensure accurate synchronization.
+   1. **Yes** - Categories, customers and products are synchronized with Bold Checkout during the saving process.
+   1. **No** - The developer must create and run a cron job in order to synchronize categories, customers, and products with Bold Checkout. A one-minute or longer sync lag can occur.
+1. **API URL** - The Bold Checkout API URL. This is where all API calls to Bold Checkout are routed. Do not change without significant reason.
+1. **Checkout URL** - The Bold Checkout URL. This is the URL of the store's checkout page. Do not change without significant reason.
+1. **Weight Unit** - The weight unit used on your store. This is used during product synchronization to ensure Bold Checkout and Magento 1 measure weight in the same way.
+1. **Weight Unit Conversion Rate To Grams** - The conversion rate between your **Weight Unit** and grams. This is used during product synchronization to ensure Bold Checkout and Magento 1 measure weight in the same way.
+
+## How it works
+
+The following steps outline what happens during the checkout process:
+
+1. Customer clicks the **Checkout** button in mini-cart or **Proceed to Checkout** button on the cart page.
+1. Magento verifies that the cart can use Bold Checkout.
+   1. The cart cannot be used with Bold Checkout in the following scenarios:
+      1. Bold/Checkout module is disabled.
+      1. Cart is limited by configuration setting "Enabled For" described in the [Configuration Section](#configuration).
+      1. There is a bundle product in the cart.
+      1. The cart has an item with a decimal quantity.
+      1. Magento is configured to calculate taxes based on billing address.
+      1. Magento is configured to calculate prices including taxes.
+      1. Magento is configured to calculate taxes before applying discounts.
+   1. Magento sends an [Initialize Order request](https://developer.boldcommerce.com/api/orders#tag/Orders/operation/InitializeOrder) with all items in the cart and discounts applied to the cart (including discount rules using discount codes).<br>
+      **Note:** During checkout initialization, sometimes the following error appears: "There was an error during checkout. Please contact us or try again later. This occurs because some of the products in the cart are not synchronized with Bold Checkout. In this case, re-save the product(s) in the Magento admin. If **"Enable Real-Time Synchronization"** is set to **"No"**, also ensure the cron job is running.
+   1. If the customer is authenticated, Magento sends [an authorization request](https://developer.boldcommerce.com/api/orders#tag/Customers/operation/CreateAuthenticatedCustomer) with customer data (email, first name, last name) and available addresses.
+   1. Magento redirects the customer to the Bold Checkout page.
+1. Bold Checkout triggers an [inventory override](https://developer.boldcommerce.com/guides/checkout/api-overrides#inventory) to verify that the requested product quantity is available.
+1. The customer provides all necessary address data on Bold Checkout page and clicks the **Continue to shipping** button.
+1. (Optional) If the customer applies a discount on the Bold Checkout page, Bold triggers a [discount override](https://developer.boldcommerce.com/guides/checkout/api-overrides#discount) call.
+1. Bold Checkout triggers two override requests to Magento:
+   1. [Shipping override](https://developer.boldcommerce.com/guides/checkout/api-overrides#shipping) - to calculate all available shipping methods and prices for the given cart.
+   1. [Tax override](https://developer.boldcommerce.com/guides/checkout/api-overrides#tax) - to calculate all available taxes applied for the given cart.
+1. The customer is redirected to the shipping methods page. The customer selects their preferred shipping method and clicks **Continue to payment**.
+1. The customer is redirected to the payment methods page. The customer selects their preferred payment method and clicks **Complete order**.
+1. Bold Checkout triggers an [inventory override](https://developer.boldcommerce.com/guides/checkout/api-overrides#inventory).
+1. (Guest customer only) Bold Checkout sends a [List Customers request](https://developer.boldcommerce.com/api/platform-connector#tag/Customers/operation/ListCustomers) filtered by email to the Magento platform connector.
+   1. (Guest customer only) If no customer with that email is found, Bold sends a [Create Customer request](https://developer.boldcommerce.com/api/platform-connector#tag/Customers/operation/CreateCustomer) to the Magento platform connector.
+   1. (Guest Customer only) Magento creates the customer and sends a [Customer Saved notification](https://developer.boldcommerce.com/api/platform-event-notifications#tag/Customer-Event-Notifications/operation/CustomerSavedEventNotification) to Bold.
+1. Bold Checkout sends a [Create Order request](https://developer.boldcommerce.com/api/platform-connector#tag/Orders/operation/CreateOrder) to the Magento platform connector.
+   1. Magento verifies that the request payload has all necessary order information.
+   1. Magento finds the active customer cart for this checkout session and updates this cart with all necessary data, such as: shipping and billing address, payment method, and customer identifier.
+   1. The order is placed using customer cart, the order email is sent to customer, and the cart is disabled.
+   1. If **Set up delayed payment capture** is disabled, an invoice is created. Find this setting in the Bold Checkout admin on the **Settings** > **General Settings** > **Checkout Process** page.
+   1. The order's total is verified against the Bold payment transaction amount. If the totals are different, a comment with the amount difference information is added to the order.
+   1. The created order data is sent back to Bold Checkout.
+1. If necessary, Bold Checkout sends an [Update Order request](https://developer.boldcommerce.com/api/platform-connector#tag/Orders/operation/UpdateOrder) to the Magento platform connector.
+1. If the order was successfully created on the Magento side, Bold sends the [order/created webhook](https://developer.boldcommerce.com/guides/checkout/webhooks#order-created-webhook) to Magento. Refer to the [webhooks section](#webhooks) for details.
+
+### Overrides
+
+Bold uses overrides to replace native Bold Checkout behavior with Magento behavior. For example, the [shipping override](https://developer.boldcommerce.com/guides/checkout/api-overrides#shipping) replaces Bold's available shipping methods with the Magento shipping methods.
+
+Find more information about overrides on the [API Overrides page](https://developer.boldcommerce.com/guides/checkout/api-overrides).
+
+### Webhooks
+
+[Webhooks](https://developer.boldcommerce.com/guides/checkout/webhooks) are registered at the moment the merchant saves the Bold Checkout Integration configuration.
+
+Currently, the module only uses one webhook: the `order/created` event. This webhook is used for the customer newsletter subscription, and it [should be removed](https://developer.boldcommerce.com/api/checkout-admin#tag/Webhooks/operation/DeleteWebhook) if the customer newsletter subscription data is sent with the order creation call.
+
+### Zones
+
+Zones for warehouse, shipping, and tax are created or updated in Bold Checkout at the moment the merchant saves the Bold Checkout Integration configuration.
+
+These zones are created using data from the Magento 1 admin but are only meant to streamline setup. The information in these zones can be sample data and does not have to reflect an actual tax zone.
+
+## Compatible Magento 1 Extensions
+
+Bold Checkout supports a variety of Magento 1 extensions. Some extensions are automatically compatible, and some require the installation of an extra extension to ensure they work correctly on your store.
+
+For a full list of the compatible extensions, refer to the [Bold Help Center](https://support.boldcommerce.com/hc/en-us/articles/16297581333652-Compatible-Magento-1-Extensions-).
+
+## Debugging
+
+You can find logs about all incoming and outgoing requests from/to Bold Checkout in `system.log`.
+
+If you cannot see some logs, such as product sync requests, the website may not be in developer mode. Navigate to the Magento admin **System** > **Configuration** > **Developer** > **Log Setting** and set **Enabled** to **Yes**.
+
+Some useful queries to verify data within the logs:
+
+1. To get product data from Bold:
+   ```sh
+   curl --request GET 'https://api.boldcommerce.com/products/v2/shops/{shop_id}/products/pid/{magento_product_id}?deep=true' \
+   --header 'Authorization: Bearer {api_token}'
+   ```
+1. To get customer data from Bold: <br>
+   ```sh
+   curl --request GET 'https://api.boldcommerce.com/customers/v2/shops/{shop_id}/customers/pid/{magento_customer_id}' \
+   --header 'Authorization: Bearer {api_token}'
+   ```
+1. To get override data from Bold:
+   ```sh
+   curl --request GET 'https://api.boldcommerce.com/checkout/shop/{shopId}/overrides' \
+   --header 'Authorization: Bearer {api_token}'
+   ```
+1. To get destination data from Bold:
+   ```sh
+   curl --request GET 'https://api.boldcommerce.com/integrations/v1/shops/{shopId}/platform_connector_destinations' \
+   --header 'Authorization: Bearer {api_token}'
+   ```

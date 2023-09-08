@@ -40,6 +40,7 @@ class Bold_Checkout_Service_Extractor_Quote_Item
         $lineItem->quantity = self::extractQuoteItemQuantity($item);
         $lineItem->line_item_key = (string)$item->getId();
         $lineItem->price_adjustment = self::calculatePriceAdjustment($item);
+        $lineItem->requires_shipping = !$item->getIsVirtual();
         $lineItem->line_item_properties = new stdClass();
         $lineItem->line_item_properties->_quote_id = (string)$item->getQuoteId();
         $lineItem->line_item_properties->_store_id = (string)$item->getQuote()->getStoreId();

@@ -63,15 +63,15 @@ class Bold_Checkout_Api_Bold_Zones
 
         $matchingZones = array_filter(
             $existingZones, function ($zone) use ($type) {
-            return $zone['type'] === $type && $zone['name'] === self::ZONE_NAME;
-        }
+                return $zone['type'] === $type && $zone['name'] === self::ZONE_NAME;
+            }
         );
 
         $zonesToUpdate = array_filter(
             $matchingZones, function ($zone) use ($regions) {
-            sort($zone['regions']);
-            return $zone['regions'] !== $regions;
-        }
+                sort($zone['regions']);
+                return $zone['regions'] !== $regions;
+            }
         );
 
         foreach ($zonesToUpdate as $zone) {
@@ -225,9 +225,9 @@ class Bold_Checkout_Api_Bold_Zones
             ->toOptionArray(true);
         $supportedCountries = array_filter(
             $allCountries, function ($country) {
-            // Antarctica is not supported in Bold Checkout.
-            return $country['value'] !== 'AQ' && $country['value'] !== '';
-        }
+               // Antarctica is not supported in Bold Checkout.
+                return $country['value'] !== 'AQ' && $country['value'] !== '';
+            }
         );
         $regions = [];
 
@@ -301,7 +301,7 @@ class Bold_Checkout_Api_Bold_Zones
     private static function validateShippingOrigin(array $shippingOrigin)
     {
         $requiredFields = [
-              'street_line_1',
+              'street_line1',
               'city',
               'country_id',
               'postcode',
@@ -312,6 +312,6 @@ class Bold_Checkout_Api_Bold_Zones
                     Mage::helper('core')->__('Please fill the "%s" for store shipping origin.', $field)
                 );
             }
-       }
+        }
     }
 }
