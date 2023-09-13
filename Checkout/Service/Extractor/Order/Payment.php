@@ -9,77 +9,32 @@ class Bold_Checkout_Service_Extractor_Order_Payment
      * Extract order payment entity data into array.
      *
      * @param Mage_Sales_Model_Order_Payment $payment
-     * @param array $transactions
      * @return array
      */
     public static function extract(
-        Mage_Sales_Model_Order_Payment $payment,
-        array $transactions = []
+        Mage_Sales_Model_Order_Payment $payment
     ) {
-        $transaction = $payment->getTransaction($payment->getLastTransId()) ?: $payment->getAuthorizationTransaction();
-        if ($transaction) {
-            $transactions[] = $transaction;
-        }
-        $result = [
-            'platform_id' => (string)$payment->getId(),
-            'currency' => (string)$payment->getOrder()->getBaseCurrencyCode(),
-            'amount_planned' => (string)$payment->getBaseAmountOrdered(),
-            'payment_method' => (string)$payment->getAdditionalInformation('payment_method'),
-            'status' => (string)$payment->getAdditionalInformation('status'),
-            'provider' => (string)$payment->getAdditionalInformation('provider'),
-            'description' => (string)$payment->getAdditionalInformation('description'),
+        return [
+            'account_status' => $payment->getAccountStatus(),
+            'additional_information' => $payment->getAdditionalInformation(),
+            'amount_authorized' => Mage::app()->getStore()->roundPrice($payment->getAmountAuthorized()),
+            'amount_ordered' => Mage::app()->getStore()->roundPrice($payment->getAmountOrdered()),
+            'amount_paid' => Mage::app()->getStore()->roundPrice($payment->getAmountPaid()),
+            'base_amount_authorized' => Mage::app()->getStore()->roundPrice($payment->getBaseAmountAuthorized()),
+            'base_amount_ordered' => Mage::app()->getStore()->roundPrice($payment->getBaseAmountOrdered()),
+            'base_amount_paid' => Mage::app()->getStore()->roundPrice($payment->getBaseAmountPaid()),
+            'base_shipping_amount' => Mage::app()->getStore()->roundPrice($payment->getBaseShippingAmount()),
+            'cc_last4' => $payment->decrypt($payment->getCcLast4()),
+            'cc_trans_id' => $payment->getCcTransId(),
+            'cc_type' => $payment->getCcType(),
+            'entity_id' => (int)$payment->getId(),
+            'last_trans_id' => $payment->getLastTransId(),
+            'method' => Bold_Checkout_Service_PaymentMethod::CODE,
+            'parent_id' => (int)$payment->getParentId(),
+            'shipping_amount' => Mage::app()->getStore()->roundPrice($payment->getShippingAmount()),
+            'extension_attributes' => [
+                'additional_information' => $payment->getAdditionalInformation(),
+            ],
         ];
-        if ($transactions) {
-            $result['transactions'] = self::extractTransactions($transactions);
-        }
-        if ($payment->getAdditionalInformation()) {
-            $result['custom_attributes'] = self::extractCustomAttributes($payment->getAdditionalInformation());
-        }
-
-        return $result;
-    }
-
-    /**
-     * Extract order custom attributes.
-     *
-     * @param array $additionalInformation
-     * @return array
-     */
-    private static function extractCustomAttributes(array $additionalInformation)
-    {
-        $customAttributes = [];
-        $fieldsExempts = ['payment_method', 'status', 'provider', 'description'];
-        foreach ($additionalInformation as $propertyName => $value) {
-            if (in_array($propertyName, $fieldsExempts)) {
-                continue;
-            }
-            $customAttributes[$propertyName] = [
-                'description' => '',
-                'value' => $value,
-            ];
-        }
-        return $customAttributes;
-    }
-
-    /**
-     * Extract payment transaction data.
-     *
-     * @param array $transactions
-     * @return array
-     */
-    private static function extractTransactions(array $transactions)
-    {
-        $result = [];
-        foreach ($transactions as $transaction) {
-            $result[] = [
-                'platform_id' => (string)$transaction->getId(),
-                'provider_transaction_id' => (string)$transaction->getTxnId(),
-                'amount' => (string)$transaction->getAdditionalInformation('amount'),
-                'status' => (string)$transaction->getAdditionalInformation('status'),
-                'currency' => (string)$transaction->getOrderPaymentObject()->getOrder()->getBaseCurrencyCode(),
-                'type' => Bold_Checkout_Service_TransactionType::getBoldTransactionType($transaction->getTxnType()),
-            ];
-        }
-        return $result;
     }
 }

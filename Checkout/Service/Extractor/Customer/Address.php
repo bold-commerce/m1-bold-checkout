@@ -16,23 +16,30 @@ class Bold_Checkout_Service_Extractor_Customer_Address
         /** @var Bold_Checkout_Model_RegionCodeMapper $regionCodeMapper */
         $regionCodeMapper = Mage::getSingleton(Bold_Checkout_Model_RegionCodeMapper::RESOURCE);
         $provinceCode = $regionCodeMapper->getIsoCode($address->getCountry(), $address->getRegionCode());
+        $street = [
+            $address->getStreet1(),
+        ];
+        if ($address->getStreet2()) {
+            $street[] = $address->getStreet2();
+        }
         return [
-            'platform_id' => (string)$address->getId(),
-            'company' => (string)$address->getCompany(),
-            'country_code' => (string)$address->getCountryId(),
-            'country' => (string)$address->getCountry(),
-            'city' => (string)$address->getCity(),
-            'first_name' => (string)$address->getFirstname(),
-            'last_name' => (string)$address->getLastname(),
-            'phone' => (string)$address->getTelephone(),
-            'postal_code' => (string)$address->getPostcode(),
-            'province' => (string)$address->getRegion(),
-            'province_code' => $provinceCode,
-            'street_1' => (string)$address->getStreet1(),
-            'street_2' => (string)$address->getStreet2(),
-            'is_default' => $address->getCustomer()->getData('default_billing') === $address->getId()
-                || $address->getCustomer()->getData('default_shipping') === $address->getId(),
-            'address_type' => 'residential',
+            'id' => (int)$address->getId(),
+            'customer_id' => (int)$address->getCustomerId(),
+            'region' => [
+                'region_code' => $provinceCode,
+                'region' => $address->getRegion(),
+                'region_id' => (int)$address->getRegionId(),
+            ],
+            'region_id' => (int)$address->getRegionId(),
+            'country_id' => $address->getCountryId(),
+            'street' => $street,
+            'telephone' => $address->getTelephone(),
+            'postcode' => $address->getPostcode(),
+            'city' => $address->getCity(),
+            'firstname' => $address->getFirstname(),
+            'lastname' => $address->getLastname(),
+            'default_shipping' => (bool)$address->getIsDefaultShipping(),
+            'default_billing' => (bool)$address->getIsDefaultBilling(),
         ];
     }
 }

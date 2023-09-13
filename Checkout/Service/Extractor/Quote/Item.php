@@ -10,17 +10,66 @@ class Bold_Checkout_Service_Extractor_Quote_Item
     /**
      * Extract quote items data.
      *
-     * @param array $quoteItems
+     * @param Mage_Sales_Model_Quote $quote
      * @return array
+     * @throws Mage_Core_Model_Store_Exception
      */
-    public static function extract(array $quoteItems)
+    public static function extract(Mage_Sales_Model_Quote $quote)
     {
-        $result = [];
-        foreach ($quoteItems as $quoteItem) {
-            $result[] = self::extractQuoteItem($quoteItem);
+        $items = [];
+        foreach ($quote->getAllItems() as $item) {
+            if (!self::shouldAppearInCart($item)) {
+                continue;
+            }
+            $price = $item->getParentItem()
+                ? Mage::app()->getStore()->roundPrice($item->getParentItem()->getPrice())
+                : Mage::app()->getStore()->roundPrice($item->getPrice());
+            $productData = current(Bold_Checkout_Service_Extractor_Product::extract([$item->getProduct()]));
+            $items[] = [
+                'item_id' => (int)$item->getId(),
+                'sku' => $item->getProduct()->getData('sku'),
+                'qty' => $item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty(),
+                'name' => $item->getName(),
+                'price' => $price,
+                'product_type' => $item->getProductType(),
+                'quote_id' => (string)$quote->getId(),
+                'product_option' => [
+                    'extension_attributes' => [
+                        'custom_options' => self::extractCustomOptions($item->getParentItem() ?: $item),
+                    ],
+                ],
+                'extension_attributes' => [
+                    'product' => $productData,
+                    'tax_details' => self::extractTaxDetails($item->getParentItem() ?: $item, $quote),
+                    'bold_discounts' => self::getDiscountData($item->getParentItem() ?: $item),
+                ],
+            ];
         }
 
-        return $result;
+        return $items;
+    }
+
+    /**
+     * Extract quote items data.
+     *
+     * @param Mage_Sales_Model_Quote $quote
+     * @return array
+     * @throws Mage_Core_Exception
+     */
+    public static function extractLineItems(Mage_Sales_Model_Quote $quote)
+    {
+        $lineItems = [];
+        foreach ($quote->getAllItems() as $cartItem) {
+            if (static::shouldAppearInCart($cartItem)) {
+                $lineItems[] = self::extractLineItem($cartItem);
+            }
+        }
+        if (!$lineItems) {
+            Mage::throwException(
+                Mage::helper('core')->__('There are no cart items to checkout.')
+            );
+        }
+        return $lineItems;
     }
 
     /**
@@ -29,32 +78,38 @@ class Bold_Checkout_Service_Extractor_Quote_Item
      * @param Mage_Sales_Model_Quote_Item $item
      * @return stdClass
      */
-    private static function extractQuoteItem(Mage_Sales_Model_Quote_Item $item)
+    private static function extractLineItem(Mage_Sales_Model_Quote_Item $item)
     {
-        /** @var Bold_Checkout_Model_Option_Formatter $formatter */
-        $formatter = Mage::getSingleton(Bold_Checkout_Model_Option_Formatter::MODEL_CLASS);
         /** @var Mage_Catalog_Helper_Product_Configuration $helper */
         $helper = Mage::helper('catalog/product_configuration');
         $lineItem = new stdClass();
-        $lineItem->platform_id = (string)$item->getProduct()->getId();
-        $lineItem->quantity = self::extractQuoteItemQuantity($item);
-        $lineItem->line_item_key = (string)$item->getId();
-        $lineItem->price_adjustment = self::calculatePriceAdjustment($item);
+        $lineItem->id = (int)$item->getProduct()->getId();
+        $lineItem->quantity = $item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty();
+        $lineItem->title = self::getLineItemName($item);
+        $lineItem->product_title = self::getLineItemName($item);
+        $lineItem->weight = self::getLineItemWeightInGrams($item);
+        $lineItem->taxable = true; // Doesn't matter since RSA will handle taxes
+        $lineItem->image = self::getLineItemImage($item);
         $lineItem->requires_shipping = !$item->getIsVirtual();
-        $lineItem->line_item_properties = new stdClass();
-        $lineItem->line_item_properties->_quote_id = (string)$item->getQuoteId();
-        $lineItem->line_item_properties->_store_id = (string)$item->getQuote()->getStoreId();
+        $lineItem->line_item_key = (string)$item->getId();
+        $lineItem->price = self::getLineItemPrice($item);
+        $lineItem->line_item_properties = [];
         $item = $item->getParentItem() ?: $item;
         if ($item->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
             foreach ($helper->getConfigurableOptions($item) as $option) {
                 $label = Mage::helper('core')->escapeHtml($option['label']);
                 $value = Mage::helper('core')->escapeHtml($option['value']);
-                $lineItem->line_item_properties->$label = $value;
+                $lineItem->line_item_properties[$label] = $value;
             }
         }
+        if ($item->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+            self::addBundleOptions($item, $lineItem);
+        }
+        /** @var Bold_Checkout_Model_Option_Formatter $formatter */
+        $formatter = Mage::getSingleton(Bold_Checkout_Model_Option_Formatter::MODEL_CLASS);
         foreach ($helper->getCustomOptions($item) as $customOption) {
             $label = Mage::helper('core')->escapeHtml($customOption['label']);
-            $lineItem->line_item_properties->$label = $formatter->format($customOption);
+            $lineItem->line_item_properties[$label] = $formatter->format($customOption);
         }
         Mage::dispatchEvent('bold_checkout_line_item_extract_after', ['line_item' => $lineItem, 'quote_item' => $item]);
 
@@ -62,42 +117,260 @@ class Bold_Checkout_Service_Extractor_Quote_Item
     }
 
     /**
-     * Get quote item quantity considering product type.
+     * Check if quote item should appear in Bold cart.
      *
-     * @param Mage_Sales_Model_Quote_Item $item
-     * @return int
+     * @param Mage_Sales_Model_Quote_Item $cartItem
+     * @return bool
      */
-    private static function extractQuoteItemQuantity(Mage_Sales_Model_Quote_Item $item)
+    public static function shouldAppearInCart(Mage_Sales_Model_Quote_Item $cartItem)
     {
-        $parentItem = $item->getParentItem();
-        if ($parentItem) {
-            $item = $parentItem;
-        }
-
-        return (int)$item->getQty();
+        $parentItem = $cartItem->getParentItem();
+        $parentIsBundle = $parentItem && $parentItem->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE;
+        return (!$cartItem->getChildren() && !$parentIsBundle)
+            || $cartItem->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE;
     }
 
     /**
-     * Get quote item discount amount.
+     * Gets the product's name from the line item
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return string
+     */
+    private static function getLineItemName(Mage_Sales_Model_Quote_Item $item)
+    {
+        $item = $item->getParentItem() ?: $item;
+        return $item->getName();
+    }
+
+    /**
+     * Gets the product's weight in grams from the line item
      *
      * @param Mage_Sales_Model_Quote_Item $item
      * @return float
      */
-    private static function calculatePriceAdjustment(Mage_Sales_Model_Quote_Item $item)
+    private static function getLineItemWeightInGrams(Mage_Sales_Model_Quote_Item $item)
     {
-        $parentItem = $item->getParentItem();
-        $childProduct = $item->getProduct();
-        $baseProductPrice = Mage::app()->getStore()->roundPrice($childProduct->getPrice());
-        if ($parentItem) {
-            $item = $parentItem;
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
+        $conversionRate = $config->getWeightConversionRate((int)$item->getQuote()->getStore()->getWebsiteId());
+        $weight = $item->getWeight();
+        return $weight ? round($weight * $conversionRate, 2) : 0;
+    }
+
+    /**
+     * Gets the product's image from the line item.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return string
+     */
+    private static function getLineItemImage(Mage_Sales_Model_Quote_Item $item)
+    {
+        $item = $item->getParentItem() ?: $item;
+        $image = $item->getProduct()->getThumbnail();
+        /** @var Mage_Catalog_Helper_Image $imageHelper */
+        $imageHelper = Mage::helper('catalog/image');
+        return $image ? (string)$imageHelper->init($item->getProduct(), 'thumbnail') : '';
+    }
+
+    /**
+     * Gets the product's price in cents from the line item.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return int
+     */
+    private static function getLineItemPrice(Mage_Sales_Model_Quote_Item $item)
+    {
+        $item = $item->getParentItem() ?: $item;
+        return (int)round((float)$item->getPrice() * 100);
+    }
+
+    /**
+     * Add bundle options to line item properties.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @param stdClass $lineItem
+     * @return void
+     */
+    private static function addBundleOptions(Mage_Sales_Model_Quote_Item $item, stdClass $lineItem)
+    {
+        /** @var Mage_Bundle_Model_Product_Type $bundleType */
+        $bundleType = Mage::getSingleton('bundle/product_type');
+        $options = $bundleType->getOptionsCollection($item->getProduct());
+        $children = $item->getChildren();
+        foreach (array_values($options->getItems()) as $i => $option) {
+            $childItem = isset($children[$i]) ? $children[$i] : null;
+            if (!$childItem) {
+                continue;
+            }
+            $qty = (int)$childItem->getQty();
+            $name = $childItem->getName();
+            $lineItem->line_item_properties[$option->getDefaultTitle()] = $qty . 'x' . $name;
         }
-        $priceIncludesTax = Mage::getStoreConfigFlag('tax/calculation/price_includes_tax', $item->getStoreId());
-        $baseItemPrice = $priceIncludesTax
-            ? Mage::app()->getStore()->roundPrice($item->getBasePriceInclTax())
-            : Mage::app()->getStore()->roundPrice($item->getBasePrice());
-        $itemCustomPrice = Mage::app()->getStore()->roundPrice($item->getCustomPrice());
-        $itemPrice = $item->getCustomPrice() ? $itemCustomPrice : $baseItemPrice;
-        $priceAdjustment = $itemPrice - $baseProductPrice;
-        return $priceAdjustment * 100;
+    }
+
+    /**
+     * Extract tax details for quote item.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @param Mage_Sales_Model_Quote $quote
+     * @return array
+     */
+    private static function extractTaxDetails(Mage_Sales_Model_Quote_Item $item, Mage_Sales_Model_Quote $quote)
+    {
+        if ($item->getProductType() === 'bundle') {
+            $itemTaxDetails = [];
+            foreach ($item->getChildren() as $childItem) {
+                $itemTaxData = self::getTaxData($quote, $childItem);
+                foreach ($itemTaxDetails as $itemTaxDetail) {
+                    foreach ($itemTaxData as $index => $itemTaxDataItem) {
+                        if ($itemTaxDetail['id'] === $itemTaxDataItem['id']) {
+                            unset($itemTaxData[$index]);
+                        }
+                    }
+                }
+                $itemTaxDetails = array_merge($itemTaxDetails, $itemTaxData);
+            }
+            return $itemTaxDetails;
+        }
+        return self::getTaxData($quote, $item);
+    }
+
+    /**
+     * Extract custom options for quote item.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return array
+     */
+    private static function extractCustomOptions(Mage_Sales_Model_Quote_Item $item)
+    {
+        $product = $item->getProduct();
+        $options = [];
+        $optionIds = $item->getOptionByCode('option_ids');
+        if (!$optionIds) {
+            return $options;
+        }
+        foreach (explode(',', $optionIds->getValue()) as $optionId) {
+            $option = $product->getOptionById($optionId);
+            if ($option) {
+                $itemOption = $item->getOptionByCode('option_' . $option->getId());
+                $options[] = [
+                    'option_id' => $option->getId(),
+                    'option_value' => $itemOption->getValue(),
+                ];
+            }
+        }
+        $addOptions = $item->getOptionByCode('additional_options');
+        if ($addOptions) {
+            $options = array_merge($options, unserialize($addOptions->getValue()));
+        }
+        return $options;
+    }
+
+    /**
+     * Get tax for quote item.
+     *
+     * @param Mage_Sales_Model_Quote $quote
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return array
+     */
+    private static function getTaxData(
+        Mage_Sales_Model_Quote $quote,
+        Mage_Sales_Model_Quote_Item $item
+    ) {
+        $itemTaxDetails = [];
+        foreach ($quote->getTaxesForItems() as $itemId => $taxDetails) {
+            if ((int)$item->getId() !== (int)$itemId) {
+                continue;
+            }
+            foreach ($taxDetails as $tax) {
+                $itemTaxDetails[] = [
+                    'id' => $tax['id'],
+                    'percent' => $tax['percent'],
+                    'rates' => $tax['rates'],
+                ];
+            }
+        }
+        return $itemTaxDetails;
+    }
+
+    /**
+     * Extract discount data for quote item.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return array
+     * @throws Mage_Core_Model_Store_Exception
+     */
+    private static function getDiscountData(Mage_Sales_Model_Quote_Item $item)
+    {
+        if ($item->getProductType() === 'bundle') {
+            return self::getBundleDiscounts($item);
+        }
+        $ruleIds = $item->getAppliedRuleIds();
+        if (!$ruleIds) {
+            return [];
+        }
+        $ruleIds = explode(',', $ruleIds);
+        $rule = Mage::getModel('salesrule/rule')->load($ruleIds[0]);
+        return [
+            [
+                'discount_data' => [
+                    'amount' => Mage::app()->getStore()->roundPrice($item->getDiscountAmount()),
+                    'base_amount' => Mage::app()->getStore()->roundPrice($item->getBaseDiscountAmount()),
+                    'original_amount' => Mage::app()->getStore()->roundPrice($item->getOriginalDiscountAmount()),
+                    'base_original_amount' => Mage::app()->getStore()->roundPrice($item->getBaseOriginalDiscountAmount()),
+                ],
+                'rule_label' => $item->getQuote()->getCouponCode()
+                    ? $item->getQuote()->getCouponCode()
+                    : Mage::helper('core')->__('Discount'),
+                'rule_id' => (int)$rule->getId(),
+            ],
+        ];
+    }
+
+    /**
+     * Extract discount data for bundle quote item.
+     *
+     * @param Mage_Sales_Model_Quote_Item $item
+     * @return array[]
+     * @throws Mage_Core_Model_Store_Exception
+     */
+    private static function getBundleDiscounts(
+        Mage_Sales_Model_Quote_Item $item
+    ) {
+        $amount = 0;
+        $baseAmount = 0;
+        $originalAmount = 0;
+        $baseOriginalAmount = 0;
+        $ruleId = null;
+        foreach ($item->getChildren() as $childItem) {
+            $ruleIds = $childItem->getAppliedRuleIds();
+            if (!$ruleIds) {
+                continue;
+            }
+            $ruleIds = explode(',', $ruleIds);
+            $rule = Mage::getModel('salesrule/rule')->load($ruleIds[0]);
+            $ruleId = (int)$rule->getId();
+            $amount += $childItem->getDiscountAmount();
+            $baseAmount += $childItem->getBaseDiscountAmount();
+            $originalAmount += $childItem->getOriginalDiscountAmount();
+            $baseOriginalAmount += $childItem->getBaseOriginalDiscountAmount();
+        }
+        if ($amount === 0) {
+            return [];
+        }
+        return [
+            [
+                'discount_data' => [
+                    'amount' => Mage::app()->getStore()->roundPrice($amount),
+                    'base_amount' => Mage::app()->getStore()->roundPrice($baseAmount),
+                    'original_amount' => Mage::app()->getStore()->roundPrice($originalAmount),
+                    'base_original_amount' => Mage::app()->getStore()->roundPrice($baseOriginalAmount),
+                ],
+                'rule_label' => $item->getQuote()->getCouponCode()
+                    ? $item->getQuote()->getCouponCode()
+                    : Mage::helper('core')->__('Discount'),
+                'rule_id' => $ruleId,
+            ],
+        ];
     }
 }

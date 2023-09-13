@@ -32,7 +32,7 @@ class Bold_CheckoutSmartwaveOnepageCheckout_Api_Bold_Orders
         ];
         $url = '/checkout/orders/{{shopId}}/init';
         $websiteId = $quote->getStore()->getWebsiteId();
-        $orderData = json_decode(Bold_Checkout_Service::call('POST', $url, $websiteId, json_encode($body)));
+        $orderData = json_decode(Bold_Checkout_Client::call('POST', $url, $websiteId, json_encode($body)));
         if (!isset($orderData->data->public_order_id)) {
             Mage::throwException('Cannot initialize order, quote id ' . $quote->getId());
         }
@@ -73,7 +73,7 @@ class Bold_CheckoutSmartwaveOnepageCheckout_Api_Bold_Orders
             'saved_addresses' => $customerAddresses,
         ];
         $authenticateResponse = json_decode(
-            Bold_Checkout_Service::call('POST', $authenticateUrl, $websiteId, json_encode($authenticateBody))
+            Bold_Checkout_Client::call('POST', $authenticateUrl, $websiteId, json_encode($authenticateBody))
         );
         if (!isset($authenticateResponse->data->application_state->customer->public_id)) {
             Mage::throwException('Cannot authenticate customer, customer id ' . $quote->getCustomerId());
@@ -123,7 +123,7 @@ class Bold_CheckoutSmartwaveOnepageCheckout_Api_Bold_Orders
         }
         $websiteId = Mage::app()->getStore($order->getStoreId())->getWebsiteId();
         $body = ['line_items' => $itemsToFulfill];
-        Bold_Checkout_Service::call('PATCH', $url, $websiteId, json_encode($body));
+        Bold_Checkout_Client::call('PATCH', $url, $websiteId, json_encode($body));
     }
 
     /**

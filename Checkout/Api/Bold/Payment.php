@@ -77,7 +77,7 @@ class Bold_Checkout_Api_Bold_Payment
             'reason' => $operation === self::CANCEL ? 'Order has been canceled.' : 'Order payment has been voided.',
         ];
         $websiteId = $order->getStore()->getWebsiteId();
-        $result = json_decode(Bold_Checkout_Service::call('POST', $url, $websiteId, json_encode($body)));
+        $result = json_decode(Bold_Checkout_Client::call('POST', $url, $websiteId, json_encode($body)));
         $errors = isset($result->errors) ? $result->errors : [];
         $logMessage = sprintf('Order id: %s. Errors: ' . PHP_EOL, $order->getIncrementId());
         $errorMessage = '';
@@ -154,7 +154,7 @@ class Bold_Checkout_Api_Bold_Payment
      */
     private static function sendCaptureRequest($url, $orderId, $websiteId, array $body)
     {
-        $result = json_decode(Bold_Checkout_Service::call('POST', $url, $websiteId, json_encode($body)));
+        $result = json_decode(Bold_Checkout_Client::call('POST', $url, $websiteId, json_encode($body)));
         $errors = isset($result->errors) ? $result->errors : [];
         $logMessage = sprintf('Order id: %s. Errors: ' . PHP_EOL, $orderId);
         $errorMessage = Mage::helper('core')->__('Cannot capture order.');
@@ -190,7 +190,7 @@ class Bold_Checkout_Api_Bold_Payment
      */
     private static function sendRefundRequest($url, $orderId, $websiteId, array $body)
     {
-        $result = json_decode(Bold_Checkout_Service::call('POST', $url, $websiteId, json_encode($body)));
+        $result = json_decode(Bold_Checkout_Client::call('POST', $url, $websiteId, json_encode($body)));
         $errors = isset($result->errors) ? $result->errors : [];
         $logMessage = sprintf('Order id: %s. Errors: ' . PHP_EOL, $orderId);
         $errorMessage = Mage::helper('core')->__('Cannot refund order.');

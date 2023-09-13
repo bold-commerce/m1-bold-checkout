@@ -11,11 +11,6 @@ class Bold_Checkout_Service_Action_DiscountLineItem implements Bold_Checkout_Ser
     const SOURCE_COUPON = 'coupon';
 
     /**
-     * @var array
-     */
-    private static $discounts = [];
-
-    /**
      * Calculate Cart Items discounts before order initialization.
      *
      * @param Mage_Sales_Model_Quote $quote
@@ -23,43 +18,25 @@ class Bold_Checkout_Service_Action_DiscountLineItem implements Bold_Checkout_Ser
      */
     public static function generateActionData(Mage_Sales_Model_Quote $quote)
     {
-        $couponCode = $quote->getCouponCode();
-        if ($couponCode) {
-            $quote->setCouponCode('');
-            $quote->collectTotals();
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
+        if ($config->isCheckoutTypeSelfHosted((int)$quote->getStore()->getWebsiteId())) {
+            return [];
         }
         $lineItems = self::getLineItems($quote);
         $itemsData = [];
+        /** @var Mage_Sales_Model_Quote_Item $lineItem */
         foreach ($lineItems as $lineItem) {
-            self::$discounts[$lineItem->getId()] = (float)$lineItem->getBaseDiscountAmount();
             $itemsData[] = [
                 'type' => self::TYPE,
                 'data' => [
                     'line_item_keys' => [$lineItem->getId()],
                     'discount_type' => self::DISCOUNT_TYPE_FIXED,
-                    'value' => $lineItem->getBaseDiscountAmount() * 100 / $lineItem->getQty(),
-                    'line_text' => Mage::helper('core')->__('Discount'),
-                    'discount_source' => self::SOURCE_CART,
-                ],
-            ];
-        }
-        if (!$couponCode) {
-            return $itemsData;
-        }
-        $quote->setCouponCode($couponCode);
-        $quote->collectTotals();
-        $lineItems = self::getLineItems($quote);
-        foreach ($lineItems as $lineItem) {
-            $couponDiscount = $lineItem->getBaseDiscountAmount() - self::$discounts[$lineItem->getId()];
-            $value = $couponDiscount * 100 / $lineItem->getQty();
-            $itemsData[] = [
-                'type' => self::TYPE,
-                'data' => [
-                    'line_item_keys' => [$lineItem->getId()],
-                    'discount_type' => self::DISCOUNT_TYPE_FIXED,
-                    'value' => $value,
-                    'line_text' => $couponCode,
-                    'discount_source' => self::SOURCE_COUPON,
+                    'value' => self::getDiscountValue($lineItem),
+                    'line_text' => $quote->getCouponCode()
+                        ? $quote->getCouponCode()
+                        : Mage::helper('core')->__('Discount'),
+                    'discount_source' => $quote->getCouponCode() ? self::SOURCE_COUPON : self::SOURCE_CART,
                 ],
             ];
         }
@@ -76,11 +53,30 @@ class Bold_Checkout_Service_Action_DiscountLineItem implements Bold_Checkout_Ser
     {
         $lineItems = [];
         foreach ($quote->getAllItems() as $cartItem) {
-            if ($cartItem->getChildren()) {
+            if (!Bold_Checkout_Service_Extractor_Quote_Item::shouldAppearInCart($cartItem)) {
                 continue;
             }
             $lineItems[] = $cartItem;
         }
         return $lineItems;
+    }
+
+    /**
+     * Get discount value considering product type.
+     *
+     * @param Mage_Sales_Model_Quote_Item $lineItem
+     * @return float|int
+     */
+    private static function getDiscountValue(Mage_Sales_Model_Quote_Item $lineItem)
+    {
+        $bundleDiscount = 0;
+        if ($lineItem->getProductType() === 'bundle') {
+            foreach ($lineItem->getChildren() as $child) {
+                $bundleDiscount += $child->getDiscountAmount();
+            }
+            return $bundleDiscount * 100 / $lineItem->getQty();
+        }
+        $lineItem = $lineItem->getParentItem() ?: $lineItem;
+        return $lineItem->getDiscountAmount() * 100 / $lineItem->getQty();
     }
 }

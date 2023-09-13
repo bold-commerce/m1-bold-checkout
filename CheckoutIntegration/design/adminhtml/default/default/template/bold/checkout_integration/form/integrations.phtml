@@ -1,0 +1,83 @@
+<?php
+$htmlId = $this->getHtmlId() ? $this->getHtmlId() : '_' . uniqid();
+?>
+<div class="grid" id="grid<?php echo $htmlId ?>">
+    <table cellpadding="0" cellspacing="0" class="border">
+        <tbody>
+            <tr class="headings" id="headings<?php echo $htmlId ?>">
+                <?php foreach ($this->_columns as $columnName => $column):?>
+                    <th><?php echo $column['label'] ?></th>
+                <?php endforeach;?>
+            </tr>
+            <tr id="addRow<?php echo $htmlId ?>">
+                <td colspan="<?php echo count($this->_columns) ?>"></td>
+            </tr>
+        </tbody>
+    </table>
+    <input type="hidden" name="<?php echo $this->getElement()->getName() ?>[__empty]" value="" />
+</div>
+<div id="empty<?php echo $htmlId ?>">
+    <span class="grid-severity-minor">
+        <span><?php echo Mage::helper('adminhtml')->__('Save the configuration to create integrations.')?></span>
+    </span>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+// create row creator
+var arrayRow<?php echo $htmlId ?> = {
+    // define row prototypeJS template
+    template : new Template(
+        '<tr id="#{_id}">'
+            <?php foreach ($this->_columns as $columnName => $column):?>
+                        +'<td>'
+                            +'<?php echo Mage::helper('core')->jsQuoteEscape($this->_renderCellTemplate($columnName)) ?>'
+                        +'<\/td>'
+            <?php endforeach;?>
+                        +'<\/tr>'
+    ),
+    rowsCount : 0,
+    add : function(templateData, insertAfterId)
+    {
+        // generate default template data
+        if ('' == templateData) {
+            var d = new Date();
+            var templateData = {
+            <?php foreach ($this->_columns as $columnName => $column):?>
+                            <?php echo $columnName ?> : '',
+            <?php endforeach;?>
+                _id : '_' + d.getTime() + '_' + d.getMilliseconds()
+            };
+        }
+
+        // insert before last row
+        if ('' == insertAfterId) {
+            Element.insert($('addRow<?php echo $htmlId ?>'), {before: this.template.evaluate(templateData)});
+        }
+        // insert after specified row
+        else {
+            Element.insert($(insertAfterId), {after: this.template.evaluate(templateData)});
+        }
+
+        this.rowsCount += 1;
+    },
+
+    showTextOnly : function()
+    {
+        $('grid<?php echo $htmlId ?>').hide();
+        $('empty<?php echo $htmlId ?>').show();
+    }
+}
+
+<?php
+$_addAfterId = "headings{$htmlId}";
+foreach ($this->getArrayRows() as $_rowId => $_row) {
+    echo "arrayRow{$htmlId}.add(" . $_row->toJson() . ", '{$_addAfterId}');\n";
+    $_addAfterId = $_rowId;
+}
+?>
+$('empty<?php echo $htmlId ?>').hide();
+<?php if (!$this->getArrayRows()):?>
+    arrayRow<?php echo $htmlId ?>.showTextOnly();
+<?php endif;?>
+</script>

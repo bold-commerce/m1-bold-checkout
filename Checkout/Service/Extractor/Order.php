@@ -9,14 +9,13 @@ class Bold_Checkout_Service_Extractor_Order
      * Extract orders data.
      *
      * @param Mage_Sales_Model_Order[] $orders
-     * @param bool $includePaymentInformation
      * @return array
      */
-    public static function extract(array $orders, $includePaymentInformation = true)
+    public static function extract(array $orders)
     {
         $result = [];
         foreach ($orders as $order) {
-            $result[] = self::extractOrder($order, $includePaymentInformation);
+            $result[] = self::extractOrder($order);
         }
 
         return $result;
@@ -26,91 +25,111 @@ class Bold_Checkout_Service_Extractor_Order
      * Extract order entity data into array.
      *
      * @param Mage_Sales_Model_Order $order
-     * @param bool $includePaymentInformation
      * @return array
      */
-    public static function extractOrder(Mage_Sales_Model_Order $order, $includePaymentInformation = true)
+    public static function extractOrder(Mage_Sales_Model_Order $order)
     {
+        $items = Bold_Checkout_Service_Extractor_Order_Item::extract($order);
         $orderExtData = Mage::getModel(Bold_Checkout_Model_Order::RESOURCE);
         $orderExtData->load($order->getId(), Bold_Checkout_Model_Resource_Order::ORDER_ID);
-        $result = [
-            'platform_id' => $order->getIncrementId(),
-            'platform_updated_at' => (string)Mage::getSingleton('core/date')->date(
-                'Y-m-d\TH:i:s\Z',
-                strtotime($order->getUpdatedAt())
-            ),
-            'order_number' => (string)$order->getExtOrderId(),
-            'platform_customer_id' => (string)$order->getCustomerId(),
-            'shipping_method' => (string)$order->getShippingMethod(),
-            'browser_ip' => (string)$order->getRemoteIp(),
-            'source' => '',
-            'created_via' => 'checkout',
-            'locale' => Mage::app()->getLocale()->getLocaleCode(),
-            'test' => false,
-            'notes' => self::getNotes(array_values($order->getAllStatusHistory())),
-            'public_notes' => self::getNotes(array_values($order->getVisibleStatusHistory())),
-            'shipping_subtotal' => (string)$order->getBaseShippingAmount(),
-            'shipping_tax' => (string)$order->getBaseShippingTaxAmount(),
-            'shipping_taxes' => [],
-            'discount' => (string)$order->getBaseDiscountAmount(),
-            'subtotal' => (string)$order->getBaseSubtotal(),
-            'subtotal_tax' => (string)$order->getBaseTaxAmount(),
-            'total_tax' => (string)$order->getBaseTaxAmount(),
-            'total' => (string)$order->getBaseGrandTotal(),
-            'refunded_amount' => (string)$order->getBaseTotalOnlineRefunded(),
-            'currency' => $order->getBaseCurrencyCode(),
-            'order_status' => $order->isCanceled() ? 'cancelled' : 'active',
-            'fulfillment_status' => $orderExtData->getFulfillmentStatus(),
-            'financial_status' => $orderExtData->getFinancialStatus(),
-            'placed_at' => Mage::getSingleton('core/date')->date(
-                'Y-m-d\TH:i:s\Z',
-                strtotime($order->getCreatedAt())
-            ),
-            'line_items' => Bold_Checkout_Service_Extractor_Order_Item::extract($order),
+        $billingAddress = Bold_Checkout_Service_Extractor_Order_Address::extract($order->getBillingAddress());
+        $shippingAddress = $order->getIsVirtual()
+            ? null
+            : Bold_Checkout_Service_Extractor_Order_Address::extract($order->getShippingAddress());
+        $payment = Bold_Checkout_Service_Extractor_Order_Payment::extract($order->getPayment());
+        $appliedTaxes = Bold_Checkout_Service_Extractor_Order_Tax::extractAppliedTaxes($order);
+        $itemAppliedTaxes = Bold_Checkout_Service_Extractor_Order_Tax::extractItemAppliedTaxes($order);
+        return [
+            'applied_rule_ids' => (string)$order->getAppliedRuleIds(),
+            'base_currency_code' => $order->getBaseCurrencyCode(),
+            'base_discount_amount' => (float)$order->getBaseDiscountAmount(),
+            'base_grand_total' => (float)$order->getBaseGrandTotal(),
+            'base_discount_tax_compensation_amount' => 0,
+            'base_shipping_amount' => (float)$order->getBaseShippingAmount(),
+            'base_shipping_discount_amount' => (float)$order->getBaseShippingDiscountAmount(),
+            'base_shipping_discount_tax_compensation_amnt' => 0,
+            'base_shipping_incl_tax' => (float)$order->getBaseShippingInclTax(),
+            'base_shipping_tax_amount' => (float)$order->getBaseShippingTaxAmount(),
+            'base_subtotal' => (float)$order->getBaseSubtotal(),
+            'base_subtotal_incl_tax' => (float)$order->getBaseSubtotalInclTax(),
+            'base_tax_amount' => (float)$order->getBaseTaxAmount(),
+            'base_total_due' => (float)$order->getBaseTotalDue(),
+            'base_to_global_rate' => (float)$order->getBaseToGlobalRate(),
+            'base_to_order_rate' => (float)$order->getBaseToOrderRate(),
+            'billing_address_id' => (int)$order->getBillingAddressId(),
+            'created_at' => $order->getCreatedAt(),
+            'customer_email' => $order->getCustomerEmail(),
+            'customer_group_id' => (int)$order->getCustomerGroupId(),
+            'customer_is_guest' => (int)$order->getCustomerIsGuest(),
+            'customer_note_notify' => (int)$order->getCustomerNoteNotify(),
+            'discount_amount' => (float)$order->getDiscountAmount(),
+            'discount_description' => '',
+            'email_sent' => (int)$order->getEmailSent(),
+            'entity_id' => (int)$order->getId(),
+            'ext_order_id' => (string)$order->getExtOrderId(),
+            'global_currency_code' => $order->getGlobalCurrencyCode(),
+            'grand_total' => (float)$order->getGrandTotal(),
+            'discount_tax_compensation_amount' => 0,
+            'increment_id' => $order->getIncrementId(),
+            'is_virtual' => (int)$order->getIsVirtual(),
+            'order_currency_code' => $order->getOrderCurrencyCode(),
+            'protect_code' => $order->getProtectCode(),
+            'quote_id' => (int)$order->getQuoteId(),
+            'remote_ip' => $order->getRemoteIp(),
+            'shipping_amount' => (float)$order->getShippingAmount(),
+            'shipping_description' => $order->getShippingDescription(),
+            'shipping_discount_amount' => (float)$order->getShippingDiscountAmount(),
+            'shipping_discount_tax_compensation_amount' => 0,
+            'shipping_incl_tax' => (float)$order->getShippingInclTax(),
+            'shipping_tax_amount' => (float)$order->getShippingTaxAmount(),
+            'state' => $order->getState(),
+            'status' => $order->getStatus(),
+            'store_currency_code' => $order->getStoreCurrencyCode(),
+            'store_id' => (int)$order->getStoreId(),
+            'store_name' => $order->getStoreName(),
+            'store_to_base_rate' => (float)$order->getStoreToBaseRate(),
+            'store_to_order_rate' => (float)$order->getStoreToOrderRate(),
+            'subtotal' => (float)$order->getSubtotal(),
+            'subtotal_incl_tax' => (float)$order->getSubtotalInclTax(),
+            'tax_amount' => (float)$order->getTaxAmount(),
+            'total_due' => (float)$order->getTotalDue(),
+            'total_item_count' => (int)$order->getTotalItemCount(),
+            'total_qty_ordered' => (int)$order->getTotalQtyOrdered(),
+            'updated_at' => $order->getUpdatedAt(),
+            'weight' => (float)$order->getWeight(),
+            'items' => $items,
+            'billing_address' => $billingAddress,
+            'payment' => $payment,
+            'status_histories' => [],
+            'extension_attributes' => [
+                'shipping_assignments' => [
+                    [
+                        'shipping' => [
+                            'address' => $shippingAddress,
+                            'method' => $order->getShippingMethod(),
+                            'total' => [
+                                'base_shipping_amount' => (float)$order->getBaseShippingAmount(),
+                                'base_shipping_discount_amount' => (float)$order->getBaseShippingDiscountAmount(),
+                                'base_shipping_discount_tax_compensation_amnt' => 0,
+                                'base_shipping_incl_tax' => (float)$order->getBaseShippingInclTax(),
+                                'base_shipping_tax_amount' => (float)$order->getBaseShippingTaxAmount(),
+                                'shipping_amount' => (float)$order->getShippingAmount(),
+                                'shipping_discount_amount' => (float)$order->getShippingDiscountAmount(),
+                                'shipping_discount_tax_compensation_amount' => 0,
+                                'shipping_incl_tax' => (float)$order->getShippingInclTax(),
+                                'shipping_tax_amount' => (float)$order->getShippingTaxAmount(),
+                            ],
+                        ],
+                        'items' => Bold_Checkout_Service_Extractor_Order_ShippingAssignmentItem::extract($order),
+                    ],
+                ],
+                'applied_taxes' => $appliedTaxes,
+                'item_applied_taxes' => $itemAppliedTaxes,
+                'converting_from_quote' => true,
+                'public_id' => $orderExtData->getPublicId(),
+                'financial_status' => $orderExtData->getFinancialStatus(),
+                'fulfillment_status' => $orderExtData->getFulfillmentStatus(),
+            ],
         ];
-        if ($includePaymentInformation) {
-            $result['payments'] = self::extractPayments($order->getAllPayments());
-        }
-        if ($order->getShippingAddress()) {
-            $result['shipping_addresses'] = [
-                Bold_Checkout_Service_Extractor_Order_Address::extract($order->getShippingAddress()),
-            ];
-        }
-        if ($order->getBillingAddress()) {
-            $result['billing_addresses'] = Bold_Checkout_Service_Extractor_Order_Address::extract(
-                $order->getBillingAddress()
-            );
-        }
-        return $result;
-    }
-
-    /**
-     * Get order notes.
-     *
-     * @param array $orderStatusHistory
-     * @return string
-     */
-    private static function getNotes(array $orderStatusHistory)
-    {
-        $notes = '';
-        /** @var Mage_Sales_Model_Order_Status_History $status */
-        foreach ($orderStatusHistory as $status) {
-            $notes .= $status->getComment() . PHP_EOL;
-        }
-        return $notes;
-    }
-
-    /**
-     * @param array $orderPayments
-     * @return Mage_Sales_Model_Entity_Order_Payment[]
-     */
-    private static function extractPayments(array $orderPayments)
-    {
-        $result = [];
-        foreach ($orderPayments as $payment) {
-            $result[] = Bold_Checkout_Service_Extractor_Order_Payment::extract($payment);
-        }
-
-        return $result;
     }
 }
