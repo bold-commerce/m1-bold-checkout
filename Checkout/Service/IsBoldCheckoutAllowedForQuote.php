@@ -10,6 +10,7 @@ class Bold_Checkout_Service_IsBoldCheckoutAllowedForQuote
      *
      * @param Mage_Sales_Model_Quote $quote
      * @return bool
+     * @throws Mage_Core_Exception
      */
     public static function isAllowed(Mage_Sales_Model_Quote $quote)
     {
@@ -25,25 +26,12 @@ class Bold_Checkout_Service_IsBoldCheckoutAllowedForQuote
         if (self::isExcludedFor($quote)) {
             return false;
         }
-
-        $cartItems = $quote->getAllItems();
-        if (!$cartItems) {
-            return false;
-        }
-        foreach ($cartItems as $item) {
+        foreach ($quote->getAllItems() as $item) {
             if ($item->getIsQtyDecimal()) {
                 return false;
             }
-            if ($item->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
-                return false;
-            }
         }
-        if (Mage::getStoreConfig('tax/calculation/based_on') === 'billing'
-            || !Mage::getStoreConfigFlag('tax/calculation/apply_after_discount')) {
-            return false;
-        }
-
-        return true;
+        return (bool)Mage::getStoreConfigFlag('tax/calculation/apply_after_discount');
     }
 
     /**

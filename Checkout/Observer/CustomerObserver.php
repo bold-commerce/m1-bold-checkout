@@ -111,7 +111,6 @@ class Bold_Checkout_Observer_CustomerObserver
      * @param int $websiteId
      * @return void
      * @throws Mage_Core_Exception
-     * @throws Zend_Db_Exception
      */
     private function syncCustomerSave($customerId, $websiteId)
     {
@@ -120,20 +119,34 @@ class Bold_Checkout_Observer_CustomerObserver
         if (!$config->isCheckoutEnabled($websiteId)) {
             return;
         }
-        if ($config->isRealtimeEnabled($websiteId)) {
-            Bold_Checkout_Service_Synchronizer::synchronizeEntities(
-                [$customerId],
-                Bold_Checkout_Service_Synchronizer::ENTITY_TYPE_CUSTOMER,
-                $websiteId
-            );
-            return;
-        }
-        Bold_Checkout_Model_Resource_SaveEntitySynchronizationTime::save(
-            [$customerId],
-            Bold_Checkout_Service_Synchronizer::ENTITY_TYPE_CUSTOMER,
-            $websiteId,
-            null
-        );
+        $queryParameters = [
+            'searchCriteria' => [
+                'filterGroups' => [
+                    [
+                        'filters' => [
+                            [
+                                'field' => 'entity_id',
+                                'conditionType' => 'eq',
+                                'value' => $customerId,
+                            ],
+                            [
+                                'field' => 'website_id',
+                                'conditionType' => 'eq',
+                                'value' => $websiteId,
+                            ],
+                        ],
+                    ],
+                ],
+                'pageSize' => 1,
+                'currentPage' => 1,
+            ],
+        ];
+        $result = Bold_Checkout_Api_Bold_Customers::update($queryParameters, $websiteId);
+        /** @var Mage_Adminhtml_Model_Session $session */
+        $session = Mage::getSingleton('adminhtml/session');
+        isset($result->errors)
+            ? $session->addError(Mage::helper('core')->__('Cannot synchronize customer with Bold'))
+            : $session->addNotice(Mage::helper('core')->__('Customer successfully synchronized with Bold'));
     }
 
     /**
@@ -143,28 +156,19 @@ class Bold_Checkout_Observer_CustomerObserver
      * @param int $websiteId
      * @return void
      * @throws Mage_Core_Exception
-     * @throws Zend_Db_Exception
      */
-    public function syncCustomerDelete($customerId, $websiteId)
+    private function syncCustomerDelete($customerId, $websiteId)
     {
         /** @var Bold_Checkout_Model_Config $config */
         $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         if (!$config->isCheckoutEnabled($websiteId)) {
             return;
         }
-        if ($config->isRealtimeEnabled($websiteId)) {
-            Bold_Checkout_Service_Deleter::deleteEntities(
-                [$customerId],
-                Bold_Checkout_Service_Synchronizer::ENTITY_TYPE_CUSTOMER,
-                $websiteId
-            );
-            return;
-        }
-        Bold_Checkout_Model_Resource_SaveEntitySynchronizationTime::save(
-            [$customerId],
-            Bold_Checkout_Service_Synchronizer::ENTITY_TYPE_CUSTOMER,
-            $websiteId,
-            null
-        );
+        $result = Bold_Checkout_Api_Bold_Customers::deleted([(int)$customerId], $websiteId);
+        /** @var Mage_Adminhtml_Model_Session $session */
+        $session = Mage::getSingleton('adminhtml/session');
+        isset($result->errors)
+            ? $session->addError(Mage::helper('core')->__('Cannot sync customer with Bold'))
+            : $session->addNotice(Mage::helper('core')->__('Customer successfully synced with Bold'));
     }
 }

@@ -16,98 +16,19 @@ class Bold_Checkout_Router
     private $front;
 
     /**
-     * @var string[]
-     */
-    private $hmacVerificationExemptions = [
-        'Bold_Checkout_Api_Platform_Destination::verify',
-    ];
-
-    /**
      * @var array
      */
-    private $routes = [
-        'bold' => [
-            'v1' => [
-                'shops' => [
-                    ':shopIdentifier' => [
-                        'verification' => [
-                            'GET' => 'Bold_Checkout_Api_Platform_Destination::verify',
-                        ],
-                        'categories' => [
-                            'GET' => 'Bold_Checkout_Api_Platform_Categories::getList',
-                        ],
-                        'products' => [
-                            'GET' => 'Bold_Checkout_Api_Platform_Products::getList',
-                        ],
-                        'customers' => [
-                            'GET' => 'Bold_Checkout_Api_Platform_Customers::getList',
-                            'POST' => 'Bold_Checkout_Api_Platform_Customers::create',
-                            ':customerId' => [
-                                'DELETE' => 'Bold_Checkout_Api_Platform_Customers::remove',
-                                'PATCH' => 'Bold_Checkout_Api_Platform_Customers::update',
-                                'validate' => [
-                                    'POST' => 'Bold_Checkout_Api_Platform_Customers::validate',
-                                ],
-                                'addresses' => [
-                                    'POST' => 'Bold_Checkout_Api_Platform_CustomerAddresses::create',
-                                    ':addressId' => [
-                                        'DELETE' => 'Bold_Checkout_Api_Platform_CustomerAddresses::remove',
-                                        'PATCH' => 'Bold_Checkout_Api_Platform_CustomerAddresses::update',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'orders' => [
-                            'GET' => 'Bold_Checkout_Api_Platform_Orders::getList',
-                            'POST' => 'Bold_Checkout_Api_Platform_Orders::create',
-                            ':orderId' => [
-                                'GET' => 'Bold_Checkout_Api_Platform_Orders::get',
-                                'PATCH' => 'Bold_Checkout_Api_Platform_Orders::update',
-                                'payments' => [
-                                    ':paymentId' => [
-                                        'PATCH' => 'Bold_Checkout_Api_Platform_OrderPayments::update',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'overrides' => [
-                            'inventory' => [
-                                'POST' => 'Bold_Checkout_Api_Platform_Inventory::check',
-                            ],
-                            'shipping' => [
-                                'POST' => 'Bold_Checkout_Api_Platform_Shipping::calculate',
-                            ],
-                            'tax' => [
-                                'POST' => 'Bold_Checkout_Api_Platform_Taxes::calculate',
-                            ],
-                            'discount' => [
-                                'POST' => 'Bold_Checkout_Api_Platform_Discount::apply',
-                            ],
-                            'address_validate' => [
-                                'POST' => 'Bold_Checkout_Api_Platform_AddressValidate::validate',
-                            ]
-                        ],
-                        'webhooks' => [
-                            'order' => [
-                                'created' => [
-                                    'POST' => 'Bold_Checkout_Api_Platform_OrdersWebhooks::created',
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ];
+    private $routes = [];
 
     /**
      * @param Bold_Checkout_Mage|null $mage
-     * @param array $routes
      */
-    public function __construct(Bold_Checkout_Mage $mage = null, array $routes = [])
+    public function __construct(Bold_Checkout_Mage $mage = null)
     {
         $this->mage = $mage ?: new Bold_Checkout_Mage();
-        $this->routes = $routes ?: $this->routes;
+        $this->routes['rest'] = $this->mage->getConfig()->getNode('rest')
+            ? $this->mage->getConfig()->getNode('rest')->asArray()
+            : [];
     }
 
     /**
@@ -138,7 +59,7 @@ class Bold_Checkout_Router
     {
         krsort($routes);
         foreach ($routes as $segment => $subRoutes) {
-            $segmentAsRegEx = preg_replace('/\:([a-zA-z0-9\-_]*)/', '(?<$1>[a-zA-Z0-9\-_]*)', $segment);
+            $segmentAsRegEx = preg_replace('/\_([a-zA-z0-9\-_]*)/', '(?<$1>[a-zA-Z0-9\-_]*)', $segment);
             $prefix = $currPath . '/' . $segmentAsRegEx;
             if (preg_match('!^' . $prefix . '$!', $path, $matches)) {
                 if (isset($subRoutes[$method])) {
@@ -223,7 +144,17 @@ class Bold_Checkout_Router
             $this->logRequest($tracingId, $request, $websiteId);
             $response = $this->getFront()->getResponse();
             try {
-                if (!$this->authorizeAction($request, $handlerFunction, $websiteId)) {
+                $processedRequest = Bold_CheckoutIntegration_Model_RequestService::prepareRequest($request);
+                try {
+                    $consumerId = Bold_CheckoutIntegration_Model_OauthService::validateAccessTokenRequest(
+                        $processedRequest,
+                        Bold_CheckoutIntegration_Model_RequestService::getRequestUrl($request),
+                        $request->getMethod()
+                    );
+                } catch (Exception $e) {
+                    $consumerId = null;
+                }
+                if (!$consumerId) {
                     $this->mage->log($tracingId . ': Authorization failed.', $websiteId);
                     $response->setBody(json_encode(['errors' => ['Unauthorized.']]));
                     $response->setHttpResponseCode(401);
@@ -234,11 +165,6 @@ class Bold_Checkout_Router
                 $response = $this->invokeHandler(
                     $functionName, $matchedArguments, $request, $response
                 ) ?: $response;
-            } catch (BadFunctionCallException $e) {
-                $response->setHttpResponseCode(501);
-            } catch (InvalidArgumentException $e) {
-                $response->setHttpResponseCode(400);
-                $response->setBody(json_encode(['error' => $e->getMessage()]));
             } catch (Exception $e) {
                 if ($this->mage->getIsDeveloperMode()) {
                     throw $e;
@@ -263,30 +189,6 @@ class Bold_Checkout_Router
     }
 
     /**
-     * Perform request authorization.
-     *
-     * @param Zend_Controller_Request_Http $request
-     * @param array $handlerFunction
-     * @param int $websiteId
-     * @return bool
-     * @throws Zend_Controller_Request_Exception
-     */
-    private function authorizeAction(Zend_Controller_Request_Http $request, array $handlerFunction, $websiteId)
-    {
-        $handlerFunctionName = isset($handlerFunction[0]) ? $handlerFunction[0] : '';
-        if (in_array($handlerFunctionName, $this->hmacVerificationExemptions)) {
-            return $request->getHeader('User-Agent') === 'Bold-API';
-        }
-        if ($request->getHeader('X-HMAC')) {
-            return $this->verifyXHMAC($request, $websiteId);
-        }
-        if ($request->getHeader('Signature')) {
-            return $this->verifySignature($request, $websiteId);
-        }
-        return $this->verifyAuthorizationHeader($request, $websiteId);
-    }
-
-    /**
      * Log Bold requests.
      *
      * @param string $tracingId
@@ -302,121 +204,5 @@ class Bold_Checkout_Router
             $websiteId
         );
         $this->mage->log($tracingId . ': ' . $request->getRawBody(), $websiteId);
-    }
-
-    /**
-     * Get Authorization header name (if set).
-     *
-     * @return null|string
-     */
-    private function getAuthorizationHeaderName()
-    {
-        //phpcs:ignore MEQP1.Security.Superglobal.SuperglobalUsageWarning
-        $headerNames = array_keys($_SERVER);
-        $filteredHeaderNames = array_filter(
-            $headerNames,
-            function ($header) {
-                return preg_match('/^(REDIRECT_)*HTTP_AUTHORIZATION$/', $header);
-            }
-        );
-        natsort($filteredHeaderNames);
-
-        return end($filteredHeaderNames);
-    }
-
-    /**
-     * Verify HMAC header.
-     *
-     * @param Zend_Controller_Request_Http $request
-     * @param int $websiteId
-     * @return bool
-     * @throws Zend_Controller_Request_Exception
-     */
-    private function verifyXHMAC(Zend_Controller_Request_Http $request, $websiteId)
-    {
-        /** @var Bold_Checkout_Model_Config $config */
-        $config = $this->mage->getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        $sharedSecret = $config->getSharedSecret($websiteId);
-        return hash_equals(
-            base64_encode(
-                hash_hmac(
-                    'sha256',
-                    $request->getHeader('X-HMAC-Timestamp'),
-                    $sharedSecret,
-                    true
-                )
-            ),
-            $request->getHeader('X-HMAC')
-        );
-    }
-
-    /**
-     * Verify the request signed using the Signing HTTP Messages IETF draft standard (Version 12).
-     *
-     * @param Zend_Controller_Request_Http $request
-     * @param int $websiteId
-     * @return bool
-     * @throws Zend_Controller_Request_Exception
-     */
-    private function verifySignature(Zend_Controller_Request_Http $request, $websiteId)
-    {
-        preg_match('/signature="(\S*?)"/', $request->getHeader('Signature'), $matches);
-        $signature = isset($matches[1]) ? $matches[1] : null;
-        if (!$signature) {
-            return false;
-        }
-        /** @var Bold_Checkout_Model_Config $config */
-        $config = $this->mage->getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        $sharedSecret = $config->getSharedSecret($websiteId);
-        $headersToSign = sprintf(
-            '(request-target): %s %s%sdate: %s',
-            strtolower($request->getMethod()),
-            $request->getRequestUri(),
-            PHP_EOL,
-            $request->getHeader('Date')
-        );
-        $hash = hash_hmac('sha256', $headersToSign, $sharedSecret, true);
-        $hashEncoded = base64_encode($hash);
-        return hash_equals($hashEncoded, $signature);
-    }
-
-    /**
-     * Verify authorization header with fall back to redirect auth.
-     *
-     * @param Zend_Controller_Request_Http $request
-     * @param int $websiteId
-     * @return bool
-     * @throws Zend_Controller_Request_Exception
-     */
-    private function verifyAuthorizationHeader(Zend_Controller_Request_Http $request, $websiteId)
-    {
-        preg_match('/signature="(\S*)"/', $request->getHeader('X-Bold-Api-Authorization'), $matches);
-        $signature = isset($matches[1]) ? $matches[1] : null;
-        if (!$signature) {
-            $authorizationHeaderName = $this->getAuthorizationHeaderName();
-            if (!$authorizationHeaderName) {
-                return false;
-            }
-            // phpcs:disable MEQP1.Security.Superglobal.SuperglobalUsageWarning
-            preg_match('/signature="(\S*)"/', $_SERVER[$authorizationHeaderName], $matches);
-            // phpcs:enable MEQP1.Security.Superglobal.SuperglobalUsageWarning
-            $signature = isset($matches[1]) ? $matches[1] : null;
-            if (!$signature) {
-                return false;
-            }
-        }
-        /** @var Bold_Checkout_Model_Config $boldConfig */
-        $boldConfig = $this->mage->getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        return hash_equals(
-            base64_encode(
-                hash_hmac(
-                    'sha256',
-                    'x-bold-date: ' . $request->getHeader('x-bold-date'),
-                    $boldConfig->getSharedSecret($websiteId),
-                    true
-                )
-            ),
-            $signature
-        );
     }
 }

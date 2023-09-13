@@ -21,7 +21,7 @@ class Bold_Checkout_Service_Extractor_Order_Item
             if ($orderItem->getChildrenItems()) {
                 continue;
             }
-            $lineItems[] = self::extractLineItem($orderItem, $config);
+            $lineItems[] = self::extractItem($orderItem, $config);
         }
         return $lineItems;
     }
@@ -33,78 +33,47 @@ class Bold_Checkout_Service_Extractor_Order_Item
      * @param Bold_Checkout_Model_Config $config
      * @return array
      */
-    private static function extractLineItem(Mage_Sales_Model_Order_Item $orderItem, Bold_Checkout_Model_Config $config)
+    private static function extractItem(Mage_Sales_Model_Order_Item $orderItem, Bold_Checkout_Model_Config $config)
     {
         $product = $orderItem->getProduct() ?: Mage::getModel('catalog/product')->load($orderItem->getProductId());
-        $websiteId = $orderItem->getOrder()->getStore()->getWebsiteId();
         return [
-            'platform_id' => (string)$orderItem->getId(),
-            'platform_product_id' => $orderItem->getParentItem()
-                ? (string)$orderItem->getParentItem()->getProductId()
-                : (string)$orderItem->getProductId(),
-            'platform_variant_id' => (string)$orderItem->getProductId(),
-            'cart_line_item_platform_id' => (string)$orderItem->getQuoteItemId(),
-            'title' => (string)$orderItem->getName(),
+            'applied_rule_ids' => (string)$orderItem->getAppliedRuleIds(),
+            'base_discount_amount' => (float)$orderItem->getBaseDiscountAmount(),
+            'base_discount_tax_compensation_amount' => (float)$orderItem->getBaseDiscountTaxCompensationAmount(),
+            'base_original_price' => (float)$orderItem->getBaseOriginalPrice(),
+            'base_price' => (float)$orderItem->getBasePrice(),
+            'base_price_incl_tax' => (float)$orderItem->getBasePriceInclTax(),
+            'base_row_total' => (float)$orderItem->getBaseRowTotal(),
+            'base_row_total_incl_tax' => (float)$orderItem->getBaseRowTotalInclTax(),
+            'base_tax_amount' => (float)$orderItem->getBaseTaxAmount(),
+            'created_at' => $orderItem->getCreatedAt(),
+            'discount_amount' => (float)$orderItem->getDiscountAmount(),
+            'discount_percent' => (float)$orderItem->getDiscountPercent(),
+            'free_shipping' => (int)$orderItem->getFreeShipping(),
+            'discount_tax_compensation_amount' => 0,
+            'is_qty_decimal' => (int)$orderItem->getIsQtyDecimal(),
+            'is_virtual' => (int)$orderItem->getIsVirtual(),
+            'item_id' => (int)$orderItem->getId(),
+            'name' => $orderItem->getName(),
+            'order_id' => (int)$orderItem->getOrderId(),
+            'original_price' => (float)$orderItem->getOriginalPrice(),
+            'price' => (float)$orderItem->getPrice(),
+            'price_incl_tax' => (float)$orderItem->getPriceInclTax(),
+            'product_id' => (int)$orderItem->getProductId(),
+            'product_type' => $orderItem->getProductType(),
+            'qty_ordered' => (float)$orderItem->getQtyOrdered(),
+            'quote_item_id' => (int)$orderItem->getQuoteItemId(),
+            'row_total' => (float)$orderItem->getRowTotal(),
+            'row_total_incl_tax' => (float)$orderItem->getRowTotalInclTax(),
+            'row_weight' => (float)$orderItem->getRowWeight(),
             'sku' => (string)$orderItem->getSku(),
-            'url' => (string)$product->getProductUrl(),
-            'image' => (string)Mage::helper('catalog/image')->init(
-                $product,
-                'image'
-            ),
-            'quantity' => (int)$orderItem->getQtyOrdered(),
-            'grams' => (float)$orderItem->getWeight() * $config->getWeightConversionRate($websiteId),
-            'weight' => (float)$orderItem->getWeight(),
-            'weight_unit' => (string)Mage::getStoreConfig('checkout/bold/weight_unit') ?: 'kg',
-            'taxable' => (int)$product->getTaxClassId() !== 6,
-            'taxes' => self::getItemTaxes($orderItem),
-            'requires_shipping' => !$orderItem->getIsVirtual(),
-            'price_per_item' => $orderItem->getParentItem()
-                ? (string)$orderItem->getParentItem()->getBasePrice()
-                : (string)$orderItem->getBasePrice(),
-            'discount_per_item' => $orderItem->getParentItem()
-                ? (string)($orderItem->getParentItem()->getBaseDiscountAmount()
-                    / $orderItem->getQtyOrdered())
-                : (string)($orderItem->getBaseDiscountAmount() / $orderItem->getQtyOrdered()),
-            'total' => $orderItem->getParentItem()
-                ? (string)$orderItem->getParentItem()->getBaseRowTotalInclTax()
-                : (string)$orderItem->getBaseRowTotalInclTax(),
-            'subtotal' => $orderItem->getParentItem()
-                ? (string)$orderItem->getParentItem()->getBaseRowTotal()
-                : (string)$orderItem->getBaseRowTotal(),
-            'total_tax' => $orderItem->getParentItem()
-                ? (string)$orderItem->getParentItem()->getBaseTaxAmount()
-                : (string)$orderItem->getBaseTaxAmount(),
-            'discounted_subtotal' => $orderItem->getParentItem()
-                ? (string)($orderItem->getParentItem()->getBaseRowTotal()
-                    - $orderItem->getParentItem()->getBaseDiscountAmount())
-                : (string)($orderItem->getBaseRowTotal() - $orderItem->getBaseDiscountAmount()),
+            'store_id' => (int)$orderItem->getStoreId(),
+            'tax_amount' => (float)$orderItem->getTaxAmount(),
+            'tax_percent' => (float)$orderItem->getTaxPercent(),
+            'updated_at' => $orderItem->getUpdatedAt(),
+            'extension_attributes' => [
+                'product' => current(Bold_Checkout_Service_Extractor_Product::extract([$product])),
+            ],
         ];
-    }
-
-    /**
-     * Extract order item taxes data.
-     *
-     * @param Mage_Sales_Model_Order_Item $orderItem
-     * @return array
-     */
-    private static function getItemTaxes(Mage_Sales_Model_Order_Item $orderItem)
-    {
-        if (!Mage::getModel('tax/sales_order_tax_item')) {
-            return [];
-        }
-        /** @var Mage_Tax_Model_Resource_Sales_Order_Tax_Item $taxItemResource */
-        $taxItemResource = Mage::getModel('tax/sales_order_tax_item')->getResource();
-        $appliedTaxes = $taxItemResource->getTaxItemsByItemId($orderItem->getId()) ?: [];
-        $result = [];
-        foreach ($appliedTaxes as $appliedTax) {
-            $result[] = [
-                'amount' => $appliedTax['base_amount'],
-                'name' => $appliedTax['title'],
-                'rate' => $appliedTax['tax_percent'],
-                'tag' => '',
-            ];
-        }
-
-        return $result;
     }
 }

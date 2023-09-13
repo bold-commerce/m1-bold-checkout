@@ -8,6 +8,7 @@ class Bold_Checkout_Service_QuoteActionManager
     const ACTIONS = [
         Bold_Checkout_Service_Action_DiscountLineItem::class,
         Bold_Checkout_Service_Action_ShippingRate::class,
+        Bold_Checkout_Service_Action_Currency::class,
     ];
 
     /**

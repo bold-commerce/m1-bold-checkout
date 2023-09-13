@@ -46,34 +46,6 @@ class Bold_Checkout_Service_MediaGalleryData
     }
 
     /**
-     * Add media gallery to products.
-     *
-     * @param Mage_Eav_Model_Entity_Collection_Abstract $products abstract collection used for backward compatibility.
-     * @return void
-     */
-    public static function addToProducts(Mage_Eav_Model_Entity_Collection_Abstract $products)
-    {
-        $loadedIds = $products->load()->getLoadedIds();
-        $configurableIds = Bold_Checkout_Model_Resource_GetProductParentIdsByChildrenIds::getParentIds($loadedIds);
-        $resourceModel = Mage::getResourceModel('catalog/product_attribute_backend_media');
-        $mediaData = method_exists($resourceModel, 'loadGallerySet')
-            ? $resourceModel->loadGallerySet(
-                array_merge($configurableIds, $loadedIds),
-                $products->getStoreId()
-            )
-            : Bold_Checkout_Model_Resource_GallerySet::loadGallerySet(
-                array_merge($configurableIds, $loadedIds),
-                $products->getStoreId()
-            );
-
-        foreach ($products->getItems() as $product) {
-            $mediaProductIds = self::getMediaProductIds($product->getId(), $configurableIds);
-            $mediaGalleryData = self::getMediaGalleryForProduct($mediaData, $mediaProductIds);
-            $product->setMediaGallery($mediaGalleryData);
-        }
-    }
-
-    /**
      * Create array of Product ids suitable for Media Gallery data binding.
      *
      * @param int $productId

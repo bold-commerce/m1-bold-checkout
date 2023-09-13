@@ -12,11 +12,13 @@ class Bold_Checkout_Model_Config
     const PATH_IP_WHITELIST = 'checkout/bold_advanced/ip_whitelist';
     const PATH_CUSTOMER_WHITELIST = 'checkout/bold_advanced/customer_whitelist';
     const PATH_ORDERS_PERCENTAGE = 'checkout/bold_advanced/orders_percentage';
-    const PATH_REALTIME_ENABLED = 'checkout/bold_advanced/realtime_enabled';
     const PATH_SECRET = 'checkout/bold/shared_secret';
     const PATH_TOKEN = 'checkout/bold/api_token';
     const PATH_API_URL = 'checkout/bold_advanced/url';
     const PATH_CHECKOUT_URL = 'checkout/bold_advanced/checkout_url';
+    const PATH_PLATFORM_CONNECTOR_URL = 'checkout/bold_advanced/platform_connector_url';
+    const PATH_INTEGRATION_IDENTITY_LINK_URL = 'checkout/bold_advanced/integration_identity_url';
+    const PATH_INTEGRATION_CALLBACK_URL = 'checkout/bold_advanced/integration_callback_url';
     const PATH_WEIGHT_CONVERSION_RATE = 'checkout/bold_advanced/weight_conversion_rate';
     const PATH_WEIGHT_UNIT = 'checkout/bold_advanced/weight_unit';
     const PATH_LOG_ENABLED = 'checkout/bold_advanced/log';
@@ -117,17 +119,6 @@ class Bold_Checkout_Model_Config
         }
         $rawData = Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_EXCLUDE_CUSTOMER_GROUPS_LIST);
         return $rawData ? array_filter(array_map('trim', explode(',', $rawData))) : [];
-    }
-
-    /**
-     * Check if real-time synchronization is enabled.
-     *
-     * @param int $websiteId
-     * @return bool
-     */
-    public function isRealtimeEnabled($websiteId)
-    {
-        return (bool)Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_REALTIME_ENABLED);
     }
 
     /**
@@ -287,5 +278,54 @@ class Bold_Checkout_Model_Config
             ? Mage::getConfig()->saveConfig(self::PATH_SHOP_IDENTIFIER, $shopIdentifier, 'websites', $websiteId)
             : Mage::getConfig()->saveConfig(self::PATH_SHOP_IDENTIFIER, $shopIdentifier);
         Mage::getConfig()->cleanCache();
+    }
+
+    /**
+     * Save shared secret in config.
+     *
+     * @param string $sharedSecret
+     * @param int $websiteId
+     * @return void
+     */
+    public function saveSharedSecret($websiteId, $sharedSecret)
+    {
+        $sharedSecret = Mage::helper('core')->encrypt($sharedSecret);
+        $websiteId
+            ? Mage::getConfig()->saveConfig(self::PATH_SECRET, $sharedSecret, 'websites', $websiteId)
+            : Mage::getConfig()->saveConfig(self::PATH_SECRET, $sharedSecret);
+        Mage::getConfig()->cleanCache();
+    }
+
+    /**
+     * Retrieve Platform Connector URL.
+     *
+     * @param int $websiteId
+     * @return string
+     */
+    public function getPlatformConnectorUrl($websiteId)
+    {
+        return rtrim(Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_PLATFORM_CONNECTOR_URL), '/');
+    }
+
+    /**
+     * Retrieve Platform Connector URL.
+     *
+     * @param int $websiteId
+     * @return string
+     */
+    public function getIntegrationIdentityUrl($websiteId)
+    {
+        return rtrim(Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_INTEGRATION_IDENTITY_LINK_URL), '/');
+    }
+
+    /**
+     * Retrieve Platform Connector URL.
+     *
+     * @param int $websiteId
+     * @return string
+     */
+    public function getIntegrationCallbackUrl($websiteId)
+    {
+        return rtrim(Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_INTEGRATION_CALLBACK_URL), '/');
     }
 }

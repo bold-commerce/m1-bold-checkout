@@ -1,4 +1,4 @@
-# M1 Self-Hosted Bold Checkout.
+# M1 Self-Hosted Bold Checkout with React App.
 
 ## Installation
 

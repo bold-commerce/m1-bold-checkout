@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config>
+    <sections>
+        <checkout>
+            <groups>
+                <bold_checkout_integration translate="label">
+                    <label>Bold Checkout Platform Connector Integrations</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>500</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <fields>
+                        <integration translate="label">
+                            <label>Integrations</label>
+                            <sort_order>10</sort_order>
+                            <show_in_website>1</show_in_website>
+                            <frontend_model>bold_checkout_integration/adminhtml_form_integrations</frontend_model>
+                        </integration>
+                    </fields>
+                </bold_checkout_integration>
+            </groups>
+        </checkout>
+    </sections>
+</config>

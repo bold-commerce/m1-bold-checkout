@@ -34,6 +34,16 @@ class Bold_Checkout_Mage
     }
 
     /**
+     * Retrieve config model.
+     *
+     * @return Mage_Core_Model_Config
+     */
+    public function getConfig()
+    {
+        return Mage::getConfig();
+    }
+
+    /**
      * Retrieve model object singleton
      *
      * @param string $modelClass
