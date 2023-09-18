@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Integration consumer key column renderer.
+ * Integration access token column renderer.
  */
 class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Access extends
     Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
