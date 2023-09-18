@@ -341,7 +341,9 @@ class Bold_Checkout_Api_Platform_Cart
         $error->message = 'There is no active cart with id: ' . $cartId;
         $error->code = 422;
         $error->type = 'server.validation_error';
-        return Bold_Checkout_Rest::buildResponse($response, json_encode(
+        return Bold_Checkout_Rest::buildResponse(
+            $response,
+            json_encode(
                 [
                     'errors' => [$error],
                 ]

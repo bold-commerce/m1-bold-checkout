@@ -23,13 +23,10 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Delete extends
      */
     protected function _toHtml()
     {
-        $integration = Mage::registry('current_bold_checkout_integration');
-        if (!$integration) {
-            return '';
-        }
+        $row = $this->getRow();
         $url = $this->getUrl(
             'adminhtml/integration/delete',
-            ['integration_id' => $integration->getIntegrationId()]
+            ['integration_id' => $row->getIntegrationId()]
         );
 
         $button = $this->getLayout()->createBlock('adminhtml/widget_button')

@@ -23,22 +23,19 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Authorize extends
      */
     protected function _toHtml()
     {
-        $integration = Mage::registry('current_bold_checkout_integration');
-        if (!$integration) {
-            return '';
-        }
-        $buttonText = $integration->getStatus()
+        $row = $this->getRow();
+        $buttonText = $row->getStatus()
             ? Mage::helper('adminhtml')->__('Re-authorize')
             : Mage::helper('adminhtml')->__('Authorize');
         $url = $this->getUrl(
             'adminhtml/integration/authorize',
-            ['integration_id' => $integration->getIntegrationId()]
+            ['integration_id' => $row->getIntegrationId()]
         );
         $button = $this->getLayout()->createBlock('adminhtml/widget_button')->setData(
             [
                 'label' => $buttonText,
-                'onclick' => 'setLocation(\'' . $url . '\')',
-                'class' => 'authorize',
+                'onclick' => $row->getIdentityLinkUrl() ? 'setLocation(\'' . $url . '\')' : '',
+                'class' => $row->getIdentityLinkUrl() ? 'authorize' : 'disabled',
             ]
         );
         return $button->toHtml();

@@ -27,6 +27,16 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
     private $deleteButtonRenderer;
 
     /**
+     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Key
+     */
+    private $integrationConsumerKeyRenderer;
+
+    /**
+     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Secret
+     */
+    private $integrationConsumerSecretRenderer;
+
+    /**
      * @inheirtDoc
      */
     protected function _construct()
@@ -40,20 +50,14 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
      */
     protected function _prepareToRender()
     {
-        $integration = $this->getIntegration();
+        $integrations = $this->getIntegrations();
         $element = $this->getElement();
         $element->setValue([]);
-        if ($integration) {
-            $element->setValue(
-                [
-                    [
-                        'integration_name' => $integration->getName(),
-                        'integration_status' => $integration->getStatus() ? 'Active' : 'Inactive',
-                        'authorize' => '',
-                    ],
-                ]
-            );
+        $integrationsData = [];
+        foreach ($integrations as $integration) {
+            $integrationsData[] = $integration->getData();
         }
+        $element->setValue($integrationsData);
         $this->addColumn(
             'integration_name',
             [
@@ -68,6 +72,22 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
                 'label' => Mage::helper('adminhtml')->__('Integration Status'),
                 'style' => 'width:120px',
                 'renderer' => $this->getStatusRenderer(),
+            ]
+        );
+        $this->addColumn(
+            'consumer_key',
+            [
+                'label' => Mage::helper('adminhtml')->__('Consumer Key'),
+                'style' => 'width:200px',
+                'renderer' => $this->getIntegrationConsumerKeyRenderer(),
+            ]
+        );
+        $this->addColumn(
+            'consumer_secret',
+            [
+                'label' => Mage::helper('adminhtml')->__('Consumer Secret'),
+                'style' => 'width:200px',
+                'renderer' => $this->getIntegrationConsumerSecretRenderer(),
             ]
         );
         $this->addColumn(
@@ -87,24 +107,35 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
     }
 
     /**
+     * Render array cell for prototypeJS template
+     *
+     * @param string $columnName
+     * @return string
+     */
+    public function renderCellTemplate($columnName, $row)
+    {
+        $column = $this->_columns[$columnName];
+        if ($column['renderer']) {
+            return $column['renderer']
+                ->setColumnName($columnName)
+                ->setColumn($column)
+                ->setRow($row)
+                ->toHtml();
+        }
+        return '';
+    }
+
+    /**
      * Load integration by website id.
      *
-     * @return Bold_CheckoutIntegration_Model_Integration|null
+     * @return Bold_CheckoutIntegration_Model_Integration[]
      * @throws Mage_Core_Exception
      */
-    private function getIntegration()
+    private function getIntegrations()
     {
-        if (Mage::registry('current_bold_checkout_integration')) {
-            return Mage::registry('current_bold_checkout_integration');
-        }
         $element = $this->getElement();
         $websiteId = (int)$element->getScopeId();
-        $integration = Bold_CheckoutIntegration_Model_IntegrationService::findByWebsiteId($websiteId);
-        if ($integration->getIntegrationId()) {
-            Mage::register('current_bold_checkout_integration', $integration);
-            return $integration;
-        }
-        return null;
+        return Bold_CheckoutIntegration_Model_IntegrationService::findByWebsiteId($websiteId);
     }
 
     /**
@@ -173,5 +204,39 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
             );
         }
         return $this->deleteButtonRenderer;
+    }
+
+    /**
+     * Retrieve renderer for integration consumer key.
+     *
+     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Key
+     */
+    private function getIntegrationConsumerKeyRenderer()
+    {
+        if (!$this->integrationConsumerKeyRenderer) {
+            $this->integrationConsumerKeyRenderer = $this->getLayout()->createBlock(
+                'bold_checkout_integration/adminhtml_form_field_consumer_key',
+                '',
+                ['is_render_to_js_template' => true]
+            );
+        }
+        return $this->integrationConsumerKeyRenderer;
+    }
+
+    /**
+     * Retrieve renderer for integration consumer key.
+     *
+     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Secret
+     */
+    private function getIntegrationConsumerSecretRenderer()
+    {
+        if (!$this->integrationConsumerSecretRenderer) {
+            $this->integrationConsumerSecretRenderer = $this->getLayout()->createBlock(
+                'bold_checkout_integration/adminhtml_form_field_consumer_secret',
+                '',
+                ['is_render_to_js_template' => true]
+            );
+        }
+        return $this->integrationConsumerSecretRenderer;
     }
 }

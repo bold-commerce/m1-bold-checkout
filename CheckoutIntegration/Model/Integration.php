@@ -6,7 +6,6 @@
 class Bold_CheckoutIntegration_Model_Integration extends Mage_Core_Model_Abstract
 {
     const RESOURCE = 'bold_checkout_integration/integration';
-    const INTEGRATION_NAME_TEMPLATE = 'BoldPlatformIntegration{{websiteId}}';
 
     /**
      * Integration Status values
@@ -25,6 +24,7 @@ class Bold_CheckoutIntegration_Model_Integration extends Mage_Core_Model_Abstrac
     const SETUP_TYPE = 'setup_type';
     const CONSUMER_ID = 'consumer_id';
     const STATUS = 'status';
+    const WEBSITE_ID = 'website_id';
 
     /**
      * @inheirtDoc

@@ -205,10 +205,10 @@
         <events>
             <admin_system_config_changed_section_checkout>
                 <observers>
-                    <create_destinations>
+                    <create_platform_integration>
                         <class>Bold_Checkout_Observer_IntegrationObserver</class>
                         <method>create</method>
-                    </create_destinations>
+                    </create_platform_integration>
                     <process_life_elements>
                         <class>Bold_Checkout_Observer_LifeElementsObserver</class>
                         <method>syncElements</method>

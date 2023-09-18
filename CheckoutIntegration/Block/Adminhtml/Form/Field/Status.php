@@ -11,15 +11,10 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Status extends
      */
     protected function _toHtml()
     {
-        $integration = Mage::registry('current_bold_checkout_integration');
-        if (!$integration) {
-            return '<span class="grid-severity-notice"><span>'
-                . Mage::helper('adminhtml')->__('Not created')
-                . '</span></span>';
-        }
+        $row = $this->getRow();
         $active = Mage::helper('adminhtml')->__('Active');
         $inactive = Mage::helper('adminhtml')->__('Inactive');
-        return $integration->getStatus()
+        return (int)$row->getStatus()
             ? '<span class="grid-severity-notice"><span>' . $active . '</span></span>'
             : '<span class="grid-severity-critical"><span>' . $inactive . '</span></span>';
     }

@@ -1,16 +1,18 @@
 <?php
 
 /**
- * Create|update destinations.
+ * Create platform connector integraiton.
  */
 class Bold_Checkout_Observer_IntegrationObserver
 {
+    const INTEGRATION_NAME_TEMPLATE = 'BoldPlatformIntegration{{websiteId}}';
+
     /**
-     * Create|update destination.
+     * Create integration.
      *
      * @param Varien_Event_Observer $event
      * @return void
-     * @throws Exception In case destination cannot be created|updated.
+     * @throws Exception
      */
     public function create(Varien_Event_Observer $event)
     {
@@ -33,6 +35,7 @@ class Bold_Checkout_Observer_IntegrationObserver
             Bold_CheckoutIntegration_Model_Integration::IDENTITY_LINK_URL => $identityUrl,
             Bold_CheckoutIntegration_Model_Integration::SETUP_TYPE => Bold_CheckoutIntegration_Model_Integration::TYPE_MANUAL,
             Bold_CheckoutIntegration_Model_Integration::STATUS => Bold_CheckoutIntegration_Model_Integration::STATUS_INACTIVE,
+            Bold_CheckoutIntegration_Model_Integration::WEBSITE_ID => $websiteId,
         ];
         Bold_CheckoutIntegration_Model_IntegrationService::create($integrationData);
     }
@@ -48,7 +51,7 @@ class Bold_Checkout_Observer_IntegrationObserver
         return str_replace(
             '{{websiteId}}',
             (string)$websiteId,
-            Bold_CheckoutIntegration_Model_Integration::INTEGRATION_NAME_TEMPLATE
+            self::INTEGRATION_NAME_TEMPLATE
         );
     }
 }

@@ -47,21 +47,6 @@ class Bold_CheckoutIntegration_Model_IntegrationService
     }
 
     /**
-     * Build integration name.
-     *
-     * @param int $websiteId
-     * @return string
-     */
-    private static function getName($websiteId)
-    {
-        return str_replace(
-            '{{websiteId}}',
-            (string)$websiteId,
-            Bold_CheckoutIntegration_Model_Integration::INTEGRATION_NAME_TEMPLATE
-        );
-    }
-
-    /**
      * Delete integration by id.
      *
      * @param int $integrationId
@@ -71,7 +56,9 @@ class Bold_CheckoutIntegration_Model_IntegrationService
     public static function delete($integrationId)
     {
         $integration = self::loadIntegrationById($integrationId);
+        $consumer = Bold_CheckoutIntegration_Model_OauthService::loadConsumer($integration->getConsumerId());
         $integration->delete();
+        $consumer->delete();
     }
 
     /**
@@ -93,12 +80,13 @@ class Bold_CheckoutIntegration_Model_IntegrationService
      * Get integration by website id.
      *
      * @param int $websiteId
-     * @return Bold_CheckoutIntegration_Model_Integration
+     * @return Bold_CheckoutIntegration_Model_Integration[]
      */
     public static function findByWebsiteId($websiteId)
     {
-        $integrationName = self::getName($websiteId);
-        return self::findByName($integrationName);
+        /** @var Bold_CheckoutIntegration_Model_Resource_Integration_Collection $collection */
+        $collection = Mage::getModel(Bold_CheckoutIntegration_Model_Integration::RESOURCE)->getCollection();
+        return $collection->addFieldToFilter('website_id', $websiteId)->getItems();
     }
 
     /**
@@ -114,6 +102,7 @@ class Bold_CheckoutIntegration_Model_IntegrationService
             $name,
             'name'
         );
+        self::addOauthConsumerData($integration);
         return $integration;
     }
 
@@ -199,20 +188,5 @@ class Bold_CheckoutIntegration_Model_IntegrationService
                 $integration->setData('token_secret', $accessToken->getSecret());
             }
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSelectedResources($integrationId)
-    {
-        $integration = $this->get($integrationId);
-        $data = $integration->getData();
-
-        $selectedResourceIds = [];
-        if ($data && isset($data['resource']) && is_array($data['resource'])) {
-            $selectedResourceIds = $data['resource'];
-        }
-        return $selectedResourceIds;
     }
 }

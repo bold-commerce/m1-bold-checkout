@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Integration name column renderer.
+ * Integration consumer secret column renderer.
  */
-class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Name extends
+class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Secret extends
     Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
 {
     /**
@@ -22,7 +22,7 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Name extends
     protected function _toHtml()
     {
         $row = $this->getRow();
-        $integrationName = $row ? $row->getName() : 'None';
-        return '<span class="grid-row-title"><span>' . $integrationName . '</span></span>';
+        $consumerSecret = $row ? $row->getSecret() : 'None';
+        return '<span class="grid-row-title"><span>' . $consumerSecret . '</span></span>';
     }
 }
