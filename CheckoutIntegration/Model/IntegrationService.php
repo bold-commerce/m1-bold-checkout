@@ -25,6 +25,7 @@ class Bold_CheckoutIntegration_Model_IntegrationService
         $consumer = Bold_CheckoutIntegration_Model_OauthService::createConsumer(['name' => $consumerName]);
         $integration->setConsumerId($consumer->getId());
         $integration->save();
+        self::addOauthConsumerData($integration);
         return $integration;
     }
 

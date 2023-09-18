@@ -37,6 +37,16 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
     private $integrationConsumerSecretRenderer;
 
     /**
+     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Access
+     */
+    private $integrationAccessTokenRenderer;
+
+    /**
+     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Secret
+     */
+    private $integrationTokenSecretRenderer;
+
+    /**
      * @inheirtDoc
      */
     protected function _construct()
@@ -88,6 +98,22 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
                 'label' => Mage::helper('adminhtml')->__('Consumer Secret'),
                 'style' => 'width:200px',
                 'renderer' => $this->getIntegrationConsumerSecretRenderer(),
+            ]
+        );
+        $this->addColumn(
+            'access_token',
+            [
+                'label' => Mage::helper('adminhtml')->__('Access Token'),
+                'style' => 'width:200px',
+                'renderer' => $this->getIntegrationAccessTokenRenderer(),
+            ]
+        );
+        $this->addColumn(
+            'token_secret',
+            [
+                'label' => Mage::helper('adminhtml')->__('Access Token Secret'),
+                'style' => 'width:200px',
+                'renderer' => $this->getIntegrationTokenSecretRenderer(),
             ]
         );
         $this->addColumn(
@@ -238,5 +264,39 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
             );
         }
         return $this->integrationConsumerSecretRenderer;
+    }
+
+    /**
+     * Retrieve renderer for integration token secret.
+     *
+     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Access
+     */
+    private function getIntegrationAccessTokenRenderer()
+    {
+        if (!$this->integrationAccessTokenRenderer) {
+            $this->integrationAccessTokenRenderer = $this->getLayout()->createBlock(
+                'bold_checkout_integration/adminhtml_form_field_token_access',
+                '',
+                ['is_render_to_js_template' => true]
+            );
+        }
+        return $this->integrationAccessTokenRenderer;
+    }
+
+    /**
+     * Retrieve renderer for integration token secret.
+     *
+     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Secret
+     */
+    private function getIntegrationTokenSecretRenderer()
+    {
+        if (!$this->integrationTokenSecretRenderer) {
+            $this->integrationTokenSecretRenderer = $this->getLayout()->createBlock(
+                'bold_checkout_integration/adminhtml_form_field_token_secret',
+                '',
+                ['is_render_to_js_template' => true]
+            );
+        }
+        return $this->integrationTokenSecretRenderer;
     }
 }

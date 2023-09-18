@@ -35,7 +35,7 @@ class Bold_CheckoutIntegration_TokenController extends Mage_Core_Controller_Fron
     {
         try {
             $requestUrl = Bold_CheckoutIntegration_Model_RequestService::getRequestUrl($this->getRequest());
-            $request = Bold_CheckoutIntegration_Model_RequestService::prepareRequest($this->getRequest(), $requestUrl);
+            $request = Bold_CheckoutIntegration_Model_RequestService::prepareRequest($this->getRequest());
             $response = Bold_CheckoutIntegration_Model_OauthService::generateAccessToken(
                 $request,
                 $requestUrl,
