@@ -46,6 +46,7 @@ class Bold_Checkout_Api_Platform_RegisterSharedSecret
         $result->shop_id = $shopId;
         $result->website_code = $website->getCode();
         $result->website_id = (int)$website->getId();
+        $result->module_version = (string)Mage::getConfig()->getModuleConfig('Bold_Checkout')->version;
         $result->errors = [];
         return Bold_Checkout_Rest::buildResponse($response, json_encode($result));
     }

@@ -16,6 +16,7 @@ class Bold_Checkout_Api_Platform_Version
         Mage_Core_Controller_Request_Http $request,
         Mage_Core_Controller_Response_Http $response
     ) {
-        return Bold_Checkout_Rest::buildResponse($response, json_encode('1.1.0'));
+        $version = (string)Mage::getConfig()->getModuleConfig('Bold_Checkout')->version;
+        return Bold_Checkout_Rest::buildResponse($response, json_encode($version));
     }
 }
