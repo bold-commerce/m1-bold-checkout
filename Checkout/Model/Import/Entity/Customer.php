@@ -13,98 +13,174 @@ class Bold_Checkout_Model_Import_Entity_Customer extends Mage_ImportExport_Model
      */
     protected function _importData()
     {
-        $customersToDelete = [];
-        $customersToUpdate = [];
         if ($this->getBehavior() === Mage_ImportExport_Model_Import::BEHAVIOR_DELETE) {
-            $customersToDelete = $this->getImportedCustomers();
+            $this->syncDeletedCustomers();
         }
         parent::_importData();
         if ($this->getBehavior() !== Mage_ImportExport_Model_Import::BEHAVIOR_DELETE) {
-            $customersToUpdate = $this->getImportedCustomers();
+            $this->syncImportedCustomers();
         }
-        /** @var Mage_Customer_Model_Config_Share $configShare */
-        $configShare = Mage::getSingleton('customer/config_share');
-        $websiteIds = [];
-        if (!$configShare->isWebsiteScope()) {
-            foreach (Mage::app()->getWebsites() as $website) {
-                $websiteIds[] = $website->getId();
-            }
-        }
-        foreach ($customersToDelete as $customer) {
-            $this->syncCustomerDelete($websiteIds, $customer);
-        }
-        foreach ($customersToUpdate as $customer) {
-            $this->syncCustomerUpdate($websiteIds, $customer);
-        }
-
         return true;
     }
 
     /**
      * Retrieve imported customers.
      *
-     * @return Mage_Customer_Model_Customer[]
+     * @return void
      */
-    private function getImportedCustomers()
+    private function syncImportedCustomers()
     {
-        $customers = [];
+        $websiteIds = [];
+        /** @var Mage_Customer_Model_Config_Share $configShare */
+        $configShare = Mage::getSingleton('customer/config_share');
+        foreach (Mage::app()->getWebsites() as $website) {
+            $websiteIds[] = $website->getId();
+        }
         while ($bunch = $this->_dataSourceModel->getNextBunch()) {
-            $emails = [];
-            foreach ($bunch as $rowNum => $rowData) {
-                if (!$this->validateRow($rowData, $rowNum)) {
-                    continue;
-                }
-                if (self::SCOPE_DEFAULT == $this->getRowScope($rowData)) {
-                    $emails[] = strtolower($rowData[self::COL_EMAIL]);
-                }
-            }
+            $emails = $this->getEmails($bunch);
             if (!$emails) {
                 continue;
             }
-            /** @var Mage_Reports_Model_Resource_Customer_Collection $collection */
-            $collection = Mage::getModel('customer/customer')->getCollection();
-            $collection->addFieldToFilter('email', $emails);
-            $customers[] = $collection->getItems();
+            if ($configShare->isWebsiteScope()) {
+                $this->syncImportedCustomersPerWebsite($emails);
+                continue;
+            }
+            foreach ($websiteIds as $websiteId) {
+                $queryParameters = [
+                    'searchCriteria' => [
+                        'filterGroups' => [
+                            [
+                                'filters' => [
+                                    [
+                                        'field' => 'email',
+                                        'conditionType' => 'in',
+                                        'value' => $emails,
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'pageSize' => count($emails),
+                        'currentPage' => 1,
+                    ],
+                ];
+                Bold_Checkout_Api_Bold_Customers::update($queryParameters, $websiteId);
+            }
         }
-
-        return array_merge(...$customers);
     }
 
     /**
-     * Perform customer data sync with Bold after customer deleted.
+     * Retrieve imported customers.
      *
-     * @param array $websiteIds
-     * @param Mage_Customer_Model_Customer $customer
      * @return void
      * @throws Mage_Core_Exception
      */
-    private function syncCustomerDelete(array $websiteIds, Mage_Customer_Model_Customer $customer)
+    private function syncDeletedCustomers()
     {
-        if (!$websiteIds) {
-            Bold_Checkout_Api_Bold_Customers::deleted((int)$customer->getId(), $customer->getWebsiteId());
-            return;
+        /** @var Mage_Customer_Model_Config_Share $configShare */
+        $configShare = Mage::getSingleton('customer/config_share');
+        $websiteIds = [];
+        foreach (Mage::app()->getWebsites() as $website) {
+            $websiteIds[] = $website->getId();
         }
-        foreach ($websiteIds as $websiteId) {
-            Bold_Checkout_Api_Bold_Customers::deleted((int)$customer->getId(), $websiteId);
+        while ($bunch = $this->_dataSourceModel->getNextBunch()) {
+            $emails = $this->getEmails($bunch);
+            if (!$emails) {
+                continue;
+            }
+            /** @var Mage_Customer_Model_Resource_Customer_Collection $collection */
+            $collection = Mage::getModel('customer/customer')->getCollection();
+            $collection->addFieldToFilter('email', $emails);
+            $collection->addAttributeToSelect('website_id');
+            if ($configShare->isWebsiteScope()) {
+                $this->syncDeletedCustomersPerWebsite($collection);
+                continue;
+            }
+            $customerIds[] = $collection->getAllIds();
+            foreach ($websiteIds as $websiteId) {
+                Bold_Checkout_Api_Bold_Customers::deleted($customerIds, $websiteId);
+            }
         }
     }
 
     /**
-     * Perform customer data sync with Bold after customer updated.
+     * Get imported customer's emails.
      *
-     * @param array $websiteIds
-     * @param Mage_Customer_Model_Customer $customer
-     * @return void
-     * @throws Exception
+     * @param array $bunch
+     * @return array
      */
-    public function syncCustomerUpdate(array $websiteIds, Mage_Customer_Model_Customer $customer)
+    private function getEmails(array $bunch)
     {
-        if (!$websiteIds) {
-            Bold_Checkout_Api_Bold_Customers::updated($customer, $customer->getWebsiteId());
-            return;
+        $emails = [];
+        foreach ($bunch as $rowNum => $rowData) {
+            if (!$this->validateRow($rowData, $rowNum)) {
+                continue;
+            }
+            if (self::SCOPE_DEFAULT == $this->getRowScope($rowData)) {
+                $emails[] = strtolower($rowData[self::COL_EMAIL]);
+            }
         }
-        foreach ($websiteIds as $websiteId) {
-            Bold_Checkout_Api_Bold_Customers::updated($customer, $websiteId);
+        return $emails;
+    }
+
+    /**
+     * Sync deleted customers with Bold.
+     *
+     * @param Mage_Customer_Model_Resource_Customer_Collection $collection
+     * @return void
+     * @throws Mage_Core_Exception
+     */
+    private function syncDeletedCustomersPerWebsite(Mage_Customer_Model_Resource_Customer_Collection $collection)
+    {
+        $ids = [];
+        foreach ($collection->getItems() as $customer) {
+            $ids[$customer->getWebsiteId()][] = $customer->getId();
+        }
+        foreach ($ids as $websiteId => $customerIds) {
+            Bold_Checkout_Api_Bold_Customers::deleted($customerIds, $websiteId);
+        }
+    }
+
+    /**
+     * Sync imported customers with Bold.
+     *
+     * @param array $emails
+     * @return void
+     * @throws Mage_Core_Exception
+     */
+    private function syncImportedCustomersPerWebsite(array $emails)
+    {
+        /** @var Mage_Customer_Model_Resource_Customer_Collection $collection */
+        $collection = Mage::getModel('customer/customer')->getCollection();
+        $collection->addFieldToFilter('email', $emails);
+        $collection->addAttributeToSelect('website_id');
+        $ids = [];
+        foreach ($collection->getItems() as $customer) {
+            $ids[$customer->getWebsiteId()][] = $customer->getId();
+        }
+        foreach ($ids as $websiteId => $customerIds) {
+            $queryParameters = [
+                'searchCriteria' => [
+                    'filterGroups' => [
+                        [
+                            'filters' => [
+                                [
+                                    'field' => 'entity_id',
+                                    'conditionType' => 'in',
+                                    'value' => $customerIds,
+                                ],
+                                [
+                                    'field' => 'website_id',
+                                    'conditionType' => 'eq',
+                                    'value' => $websiteId,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'pageSize' => count($customerIds),
+                    'currentPage' => 1,
+                ],
+            ];
+            Bold_Checkout_Api_Bold_Customers::update($queryParameters, $websiteId);
         }
     }
 }

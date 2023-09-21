@@ -45,12 +45,13 @@ class Bold_Checkout_Service_ShopIdentifier
             'Authorization: Bearer ' . $apiToken,
             'Content-Type: application/json',
             'User-Agent:' . Bold_Checkout_Service_UserAgent::getUserAgent(),
-            'Bold-API-Version-Date:' . Bold_Checkout_Service::BOLD_API_VERSION_DATE,
+            'Bold-API-Version-Date:' . Bold_Checkout_Client::BOLD_API_VERSION_DATE,
         ];
         $url = $boldConfig->getApiUrl($websiteId). self::SHOP_INFO_URL;
         $shopInfo = json_decode(Bold_Checkout_HttpClient::call('GET', $url, null, $headers));
-        if (isset($shopInfo->error)) {
-            Mage::throwException($shopInfo->error_description);
+        if (isset($shopInfo->errors)) {
+            $error = current($shopInfo->errors);
+            Mage::throwException($error->message);
         }
         $shopIdentifier = $shopInfo->shop_identifier;
         $boldConfig->saveShopIdentifier($shopIdentifier, $websiteId);

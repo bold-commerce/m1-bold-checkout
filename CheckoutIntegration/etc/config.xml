@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Bold_CheckoutIntegration>
+            <version>0.1.0.1</version>
+        </Bold_CheckoutIntegration>
+    </modules>
+    <global>
+        <models>
+            <bold_checkout_integration>
+                <class>Bold_CheckoutIntegration_Model</class>
+                <resourceModel>bold_checkout_integration_resource</resourceModel>
+            </bold_checkout_integration>
+            <bold_checkout_integration_resource>
+                <class>Bold_CheckoutIntegration_Model_Resource</class>
+                <deprecatedNode>bold_checkout_integration_mysql4</deprecatedNode>
+                <entities>
+                    <oauth_consumer>
+                        <table>bold_checkout_integration_oauth_consumer</table>
+                    </oauth_consumer>
+                    <oauth_token>
+                        <table>bold_checkout_integration_oauth_token</table>
+                    </oauth_token>
+                    <oauth_nonce>
+                        <table>bold_checkout_integration_oauth_nonce</table>
+                    </oauth_nonce>
+                    <integration>
+                        <table>bold_checkout_integration_integration</table>
+                    </integration>
+                </entities>
+            </bold_checkout_integration_resource>
+        </models>
+        <blocks>
+            <bold_checkout_integration>
+                <class>Bold_CheckoutIntegration_Block</class>
+            </bold_checkout_integration>
+        </blocks>
+        <resources>
+            <bold_checkout_integration_setup>
+                <setup>
+                    <module>Bold_CheckoutIntegration</module>
+                </setup>
+            </bold_checkout_integration_setup>
+        </resources>
+    </global>
+
+    <frontend>
+        <routers>
+            <oauth>
+                <args>
+                    <modules>
+                        <Bold_CheckoutIntegration before="Mage_Oauth">Bold_CheckoutIntegration</Bold_CheckoutIntegration>
+                    </modules>
+                </args>
+            </oauth>
+        </routers>
+    </frontend>
+
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <Bold_CheckoutIntegration before="Mage_Adminhtml">Bold_CheckoutIntegration_Adminhtml</Bold_CheckoutIntegration>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+</config>

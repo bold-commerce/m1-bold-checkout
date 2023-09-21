@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 <config>
-	<modules>
-		<Bold_Checkout>
-			<active>true</active>
-			<codePool>community</codePool>
-		</Bold_Checkout>
-	</modules>
+    <modules>
+        <Bold_Checkout>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Bold_CheckoutIntegration/>
+            </depends>
+        </Bold_Checkout>
+    </modules>
 </config>

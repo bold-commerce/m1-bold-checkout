@@ -51,7 +51,6 @@ class Bold_Checkout_Rest
         $code = 200,
         $contentType = 'application/json'
     ) {
-        $body = Bold_Checkout_Service_AddFlowIdToBody::addFlowId($body);
         try {
             $response->setHttpResponseCode($code);
         } catch (Zend_Controller_Response_Exception $e) {

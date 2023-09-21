@@ -87,7 +87,7 @@ class Bold_Checkout_Observer_LifeElementsObserver
     {
         foreach ($elements as $element) {
             $result = json_decode(
-                Bold_Checkout_Service::call(
+                Bold_Checkout_Client::call(
                     'POST',
                     self::LIFE_ELEMENTS_API_URI,
                     $websiteId,
@@ -121,7 +121,7 @@ class Bold_Checkout_Observer_LifeElementsObserver
     {
         foreach ($elements as $publicElementId => $elementData) {
             $result = json_decode(
-                Bold_Checkout_Service::call(
+                Bold_Checkout_Client::call(
                     'PATCH',
                     self::LIFE_ELEMENTS_API_URI . '/' . $publicElementId,
                     $websiteId,
@@ -152,7 +152,7 @@ class Bold_Checkout_Observer_LifeElementsObserver
     {
         foreach ($elements as $element) {
             $result = json_decode(
-                Bold_Checkout_Service::call(
+                Bold_Checkout_Client::call(
                     'DELETE',
                     self::LIFE_ELEMENTS_API_URI . '/' . $element,
                     $websiteId
@@ -179,7 +179,7 @@ class Bold_Checkout_Observer_LifeElementsObserver
     private function getLifeElementsFromBold($websiteId)
     {
         $result = json_decode(
-            Bold_Checkout_Service::call('GET', self::LIFE_ELEMENTS_API_URI, $websiteId),
+            Bold_Checkout_Client::call('GET', self::LIFE_ELEMENTS_API_URI, $websiteId),
             true
         );
         if (isset($result['errors'])) {

@@ -84,12 +84,11 @@ class Bold_Checkout_Service_PaymentMethod extends Mage_Payment_Model_Method_Abst
     {
         $title = null;
         $infoInstance = $this->getInfoInstance();
-        if ($infoInstance && $infoInstance->getAdditionalInformation('payment_tender')) {
-            $title = $infoInstance->getAdditionalInformation('payment_tender') . ': ';
-            $title = str_replace('_', ' ', uc_words($title));
-            $title .= strlen($infoInstance->getAdditionalInformation('transaction_card_last4')) === 4
-                ? '••••• •••••• ' . $infoInstance->getAdditionalInformation('transaction_card_last4')
-                : $infoInstance->getAdditionalInformation('transaction_card_last4');
+        if ($infoInstance && $infoInstance->getCcLast4()) {
+            $ccLast4 = $infoInstance->decrypt($infoInstance->getCcLast4());
+            $title .= strlen($ccLast4) === 4
+                ? $infoInstance->getCcType() . ': ••••• •••••• ' . $ccLast4
+                : $infoInstance->getCcType() . ': ' . $ccLast4;
         }
         return $title ?: parent::getTitle();
     }

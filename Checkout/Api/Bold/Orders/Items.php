@@ -46,7 +46,7 @@ class Bold_Checkout_Api_Bold_Orders_Items
         }
         $websiteId = $order->getStore()->getWebsiteId();
         $body = ['line_items' => $itemsToFulfill];
-        Bold_Checkout_Service::call('PATCH', $url, $websiteId, json_encode($body));
+        Bold_Checkout_Client::call('PATCH', $url, $websiteId, json_encode($body));
     }
 
     /**

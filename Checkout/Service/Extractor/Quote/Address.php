@@ -6,12 +6,12 @@
 class Bold_Checkout_Service_Extractor_Quote_Address
 {
     /**
-     * Extract customer address entity data into array.
+     * Extract customer address entity data into array in Bold format for storefront Client.
      *
      * @param Mage_Sales_Model_Quote_Address $address
      * @return array
      */
-    public static function extract(Mage_Sales_Model_Quote_Address $address)
+    public static function extractInBoldFormat(Mage_Sales_Model_Quote_Address $address)
     {
         /** @var Bold_Checkout_Model_RegionCodeMapper $regionCodeMapper */
         $regionCodeMapper = Mage::getSingleton(Bold_Checkout_Model_RegionCodeMapper::RESOURCE);
@@ -40,5 +40,57 @@ class Bold_Checkout_Service_Extractor_Quote_Address
             'address_line_1' => (string)$address->getStreet1(),
             'address_line_2' => (string)$address->getStreet2(),
         ];
+    }
+
+    /**
+     * Extract customer address entity data into array.
+     *
+     * @param Mage_Sales_Model_Quote_Address $address
+     * @return array
+     */
+    public static function extract(Mage_Sales_Model_Quote_Address $address)
+    {
+        $street = $address->getStreet1()
+            ? [$address->getStreet1(), $address->getStreet2()]
+            : [''];
+        $discounts = [];
+        if ($address->getDiscountAmount()) {
+            $ruleIds = $address->getAppliedRuleIds();
+            if (!$ruleIds) {
+                return [];
+            }
+            $ruleIds = explode(',', $ruleIds);
+            $rule = Mage::getModel('salesrule/rule')->load($ruleIds[0]);
+            $discounts[] = [
+                'discount_data' => [
+                    'amount' => (float)$address->getDiscountAmount(),
+                    'base_amount' => (float)$address->getBaseDiscountAmount(),
+                    'original_amount' => (float)$address->getDiscountAmount(),
+                    'base_original_amount' => (float)$address->getBaseDiscountAmount(),
+                ],
+                'rule_label' => $rule->getName(),
+                'rule_id' => (int)$rule->getId(),
+            ];
+        }
+        $address =  [
+            'id' => (int)$address->getId() ?: null,
+            'region' => $address->getRegion(),
+            'region_id' => (int)$address->getRegionId() ?: null,
+            'region_code' => $address->getRegionCode(),
+            'country_id' => $address->getCountryId(),
+            'street' => $street,
+            'telephone' => $address->getTelephone(),
+            'postcode' => $address->getPostcode(),
+            'city' => $address->getCity(),
+            'firstname' => $address->getFirstname(),
+            'lastname' => $address->getLastname(),
+            'email' => $address->getEmail(),
+            'same_as_billing' => (int)$address->getSameAsBilling(),
+            'save_in_address_book' => (int)$address->getSaveInAddressBook(),
+        ];
+        if ($discounts) {
+            $address['extension_attributes']['discounts'] = $discounts;
+        }
+        return $address;
     }
 }

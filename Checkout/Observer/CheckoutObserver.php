@@ -5,8 +5,6 @@
  */
 class Bold_Checkout_Observer_CheckoutObserver
 {
-    const URL = 'https://api.boldcommerce.com/checkout/storefront/';
-
     /**
      * Initialize and navigate to bold checkout page.
      *
@@ -29,7 +27,9 @@ class Bold_Checkout_Observer_CheckoutObserver
             return;
         }
         if (!$quote->getCustomerId() && !$quote->isAllowedGuestCheckout()) {
-            Mage::getSingleton('customer/session')->addNotice(
+            /** @var Mage_Customer_Model_Session $customerSession */
+            $customerSession = Mage::getSingleton('customer/session');
+            $customerSession->addNotice(
                 Mage::helper('core')->__(
                     'Sorry, guest checkout is not available. Please log in or register.'
                 )
@@ -58,8 +58,7 @@ class Bold_Checkout_Observer_CheckoutObserver
                 . '/experience/resume?public_order_id=' . $orderId . '&token=' . $token;
             Mage::app()->getResponse()->setRedirect($checkoutUrl);
             if (!$boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
-                $event
-                    ->getEvent()
+                $event->getEvent()
                     ->getControllerAction()
                     ->setFlag('', Mage_Core_Controller_Front_Action::FLAG_NO_DISPATCH, true);
             }

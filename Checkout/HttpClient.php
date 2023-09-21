@@ -12,16 +12,12 @@ class Bold_Checkout_HttpClient
      * @param string $url
      * @param string|null $data
      * @param array $headers
-     * @param bool $removeFlowId
      * @return string
      * @throws Mage_Core_Model_Store_Exception
      * @phpcs:disable MEQP1.Security.DiscouragedFunction.Found
      */
-    public static function call($method, $url, $data = null, array $headers = [], $removeFlowId = false)
+    public static function call($method, $url, $data = null, array $headers = [])
     {
-        if (!$removeFlowId) {
-            $data = Bold_Checkout_Service_AddFlowIdToBody::addFlowId($data);
-        }
         /** @var Bold_Checkout_Model_Config $boldConfig */
         $boldConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         $websiteId = Mage::app()->getStore()->getWebsiteId();
@@ -47,19 +43,9 @@ class Bold_Checkout_HttpClient
         }
 
         curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 300);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         $result = curl_exec($curl);
-        if ($result === false) {
-            $result = json_encode(
-                [
-                    'errors' => [
-                        'type' => null,
-                        'message' => curl_error($curl),
-                        'code' => curl_errno($curl),
-                    ],
-                ]
-            );
-        }
         if ($boldConfig->isLogEnabled($websiteId)) {
             Mage::log(
                 $tracingId . ': Outgoing call code: ' . curl_getinfo($curl, CURLINFO_HTTP_CODE),
@@ -74,6 +60,21 @@ class Bold_Checkout_HttpClient
             );
         }
         curl_close($curl);
+        try {
+            $isJson = json_decode($result);
+        } catch (Exception $e) {
+            $isJson = false;
+        }
+        if ($isJson === false) {
+            $result = json_encode(
+                [
+                    'errors' => [
+                        'message' => 'Invalid response from Bold',
+                        'code' => '500',
+                    ],
+                ]
+            );
+        }
         return $result;
     }
 

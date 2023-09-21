@@ -29,7 +29,7 @@ class Bold_Checkout_StorefrontService
             'Authorization: Bearer ' . $boldCheckoutData->data->jwt_token,
             'Content-Type: application/json',
             'User-Agent:' . Bold_Checkout_Service_UserAgent::getUserAgent(),
-            'Bold-API-Version-Date:' . Bold_Checkout_Service::BOLD_API_VERSION_DATE,
+            'Bold-API-Version-Date:' . Bold_Checkout_Client::BOLD_API_VERSION_DATE,
         ];
         $result = json_decode(
             Bold_Checkout_HttpClient::call(

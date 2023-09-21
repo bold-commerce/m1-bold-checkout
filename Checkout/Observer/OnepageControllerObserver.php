@@ -36,7 +36,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
             $billingAddress = Bold_Checkout_StorefrontService::call(
                 'POST',
                 'addresses/billing',
-                Bold_Checkout_Service_Extractor_Quote_Address::extract(
+                Bold_Checkout_Service_Extractor_Quote_Address::extractInBoldFormat(
                     $controllerAction->getOnepage()->getQuote()->getBillingAddress()
                 )
             );
@@ -52,7 +52,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
             $shippingAddress = Bold_Checkout_StorefrontService::call(
                 'POST',
                 'addresses/shipping',
-                Bold_Checkout_Service_Extractor_Quote_Address::extract(
+                Bold_Checkout_Service_Extractor_Quote_Address::extractInBoldFormat(
                     $controllerAction->getOnepage()->getQuote()->getBillingAddress()
                 )
             );
@@ -84,7 +84,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
         $address = Bold_Checkout_StorefrontService::call(
             'POST',
             'addresses/shipping',
-            Bold_Checkout_Service_Extractor_Quote_Address::extract(
+            Bold_Checkout_Service_Extractor_Quote_Address::extractInBoldFormat(
                 $quote->getShippingAddress()
             )
         );

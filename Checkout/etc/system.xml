@@ -10,12 +10,17 @@
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <fields>
+                        <notice>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <frontend_model>bold_checkout/adminhtml_system_config_notice</frontend_model>
+                        </notice>
                         <enabled translate="label">
                             <label>Enable Bold Checkout</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>10</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment><![CDATA[Refer to the <a target='_blank' href="https://developer.boldcommerce.com/default/guides/platform-integration/magento-1">documentation</a> for more details.]]></comment>
                         </enabled>
@@ -24,35 +29,25 @@
                             <frontend_type>obscure</frontend_type>
                             <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
                             <sort_order>30</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>required-entry</frontend_class>
                             <comment>API token used to communicate with the Bold Checkout APIs. Obtain in the Bold Account Center.
                             </comment>
                         </api_token>
-                        <shared_secret>
-                            <label>Secret Key</label>
-                            <frontend_type>obscure</frontend_type>
-                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
-                            <sort_order>40</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <frontend_class>required-entry</frontend_class>
-                            <comment>Secret key used to validate incoming API calls from Bold Checkout. Obtain in the Bold Account Center.</comment>
-                        </shared_secret>
                     </fields>
                 </bold>
                 <bold_checkout_life_elements translate="label">
                     <label>Bold Checkout Integration (LiFE) Elements</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>100</sort_order>
-                    <show_in_default>1</show_in_default>
+                    <show_in_default>0</show_in_default>
                     <show_in_website>1</show_in_website>
                     <fields>
                         <life_elements translate="label">
                             <label>Custom elements</label>
                             <sort_order>10</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_model>bold_checkout/adminhtml_system_config_form_field_life_elements</frontend_model>
                             <backend_model>adminhtml/system_config_backend_serialized_array</backend_model>
@@ -64,7 +59,7 @@
                     <label>Bold Checkout Integration Advanced Settings</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>101</sort_order>
-                    <show_in_default>1</show_in_default>
+                    <show_in_default>0</show_in_default>
                     <show_in_website>1</show_in_website>
                     <expanded>0</expanded>
                     <fields>
@@ -73,7 +68,7 @@
                             <frontend_type>select</frontend_type>
                             <source_model>bold_checkout/system_config_source_type</source_model>
                             <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment><![CDATA[
                         Standard - replace the native checkout with Bold Checkout's three-page checkout.<br>
@@ -86,7 +81,7 @@
                             <frontend_type>select</frontend_type>
                             <source_model>bold_checkout/system_config_source_filter</source_model>
                             <sort_order>30</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Configure Bold Checkout access limitations. Select 'All' to remove all limitations.</comment>
                         </enabled_for>
@@ -97,7 +92,7 @@
                                 <enabled_for>1</enabled_for>
                             </depends>
                             <sort_order>40</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Only customers with listed IPs will be able to navigate to Bold Checkout.
                                 Please add whitelisted IPs separated by comma.</comment>
@@ -109,7 +104,7 @@
                                 <enabled_for>2</enabled_for>
                             </depends>
                             <sort_order>50</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Only customers with listed emails will be able to navigate to Bold Checkout.
                                 Please add whitelisted Customer emails separated by comma.</comment>
@@ -122,7 +117,7 @@
                                 <enabled_for>3</enabled_for>
                             </depends>
                             <sort_order>60</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Percentage of carts will be redirected to Bold Checkout.
                                 Please select the percentage of Orders to be placed using Bold Checkout.</comment>
@@ -132,7 +127,7 @@
                             <frontend_type>select</frontend_type>
                             <source_model>bold_checkout/system_config_source_exclude</source_model>
                             <sort_order>35</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Configure Bold Checkout access limitations. Select 'None' to remove all limitations.</comment>
                         </exclude_for>
@@ -144,27 +139,15 @@
                                 <exclude_for>1</exclude_for>
                             </depends>
                             <sort_order>36</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Customers who belong to specified customer groups will not be able to navigate to Bold Checkout.</comment>
                         </exclude_customer_groups_list>
-                        <realtime_enabled>
-                            <label>Enable Real-Time Synchronization</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>70</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <comment>Enabling may lead to significant delays on mass updates and imports.
-                                When disabling, delegate customer, product, and category synchronization to cron job.
-                                Ensure cron job is running before disabling this setting.
-                            </comment>
-                        </realtime_enabled>
                         <url translate="label">
                             <label>API Url</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>80</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>validate-url</frontend_class>
                             <comment>Bold Checkout API URL. Do not change.</comment>
@@ -172,17 +155,40 @@
                         <checkout_url translate="label">
                             <label>Checkout Url</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>90</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <sort_order>116</sort_order>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>validate-url</frontend_class>
-                            <comment>The URL of your checkout. Do not change.</comment>
                         </checkout_url>
+                        <platform_connector_url translate="label">
+                            <label>Platform Connector Url</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>117</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <frontend_class>validate-url</frontend_class>
+                        </platform_connector_url>
+                        <integration_callback_url translate="label">
+                            <label>Platform Connector Integration Callback URL</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>118</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <frontend_class>validate-url</frontend_class>
+                        </integration_callback_url>
+                        <integration_identity_url translate="label">
+                            <label>Platform Connector Integration Identity Link URL</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>119</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <frontend_class>validate-url</frontend_class>
+                        </integration_identity_url>
                         <weight_unit>
                             <label>Weight Unit</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>100</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Weight unit. Used to properly synchronize products with Bold Checkout.</comment>
                         </weight_unit>
@@ -190,7 +196,7 @@
                             <label>Weight Unit Conversion Rate To Grams</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>110</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment>Conversion rate to get product weight in grams. Change accordingly with the "Weight Unit" configuration.
                                 Used to properly synchronize products with Bold Checkout.</comment>
@@ -200,7 +206,7 @@
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>120</sort_order>
-                            <show_in_default>1</show_in_default>
+                            <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment><![CDATA[Log Bold Checkout requests for debugging purpose.]]></comment>
                         </log>
