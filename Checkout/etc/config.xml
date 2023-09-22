@@ -227,6 +227,7 @@
                 </_cartId>
             </carts>
             <customers>
+                <POST>Bold_Checkout_Api_Platform_Customers::save</POST>
                 <search>
                     <GET>Bold_Checkout_Api_Platform_Customers::search</GET>
                 </search>
