@@ -28,6 +28,7 @@ class Bold_CheckoutIntegration_Adminhtml_IntegrationController extends Mage_Admi
             $this->_redirectReferer();
             return;
         }
+        $integration->setStatus(Bold_CheckoutIntegration_Model_Integration::STATUS_INACTIVE)->save();
         Mage::getSingleton('adminhtml/session')->addError(
             Mage::helper('adminhtml')->__('Integration authorization failed.')
         );
