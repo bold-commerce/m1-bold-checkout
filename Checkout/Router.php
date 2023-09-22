@@ -145,22 +145,22 @@ class Bold_Checkout_Router
             $response = $this->getFront()->getResponse();
             try {
                 $processedRequest = Bold_CheckoutIntegration_Model_RequestService::prepareRequest($request);
-                try {
-                    $consumerId = Bold_CheckoutIntegration_Model_OauthService::validateAccessTokenRequest(
-                        $processedRequest,
-                        Bold_CheckoutIntegration_Model_RequestService::getRequestUrl($request),
-                        $request->getMethod()
-                    );
-                } catch (Exception $e) {
-                    $consumerId = null;
-                }
-                if (!$consumerId) {
-                    $this->mage->log($tracingId . ': Authorization failed.', $websiteId);
-                    $response->setBody(json_encode(['errors' => ['Unauthorized.']]));
-                    $response->setHttpResponseCode(401);
-                    $request->setDispatched();
-                    return $response;
-                }
+                $consumerId = Bold_CheckoutIntegration_Model_OauthService::validateAccessTokenRequest(
+                    $processedRequest,
+                    Bold_CheckoutIntegration_Model_RequestService::getRequestUrl($request),
+                    $request->getMethod()
+                );
+            } catch (Exception $e) {
+                $consumerId = null;
+            }
+            if (!$consumerId) {
+                $this->mage->log($tracingId . ': Authorization failed.', $websiteId);
+                $response->setBody(json_encode(['errors' => ['Unauthorized.']]));
+                $response->setHttpResponseCode(401);
+                $request->setDispatched();
+                return $response;
+            }
+            try {
                 list($functionName, $matchedArguments) = $handlerFunction;
                 $response = $this->invokeHandler(
                     $functionName, $matchedArguments, $request, $response
