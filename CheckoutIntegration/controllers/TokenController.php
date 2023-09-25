@@ -64,7 +64,7 @@ class Bold_CheckoutIntegration_TokenController extends Mage_Core_Controller_Fron
         if ($exception instanceof Mage_Oauth_Exception) {
             $responseCode = self::HTTP_UNAUTHORIZED;
         } else {
-            $errorMsg = 'internal_error&message=' . ($errorMsg ? $errorMsg : 'empty_message');
+            $errorMsg = 'internal_error&message=' . ($errorMsg ?: 'empty_message');
             $responseCode = self::HTTP_INTERNAL_ERROR;
         }
         $response->setHttpResponseCode($responseCode);

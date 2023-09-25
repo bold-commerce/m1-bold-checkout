@@ -18,8 +18,19 @@ class Bold_CheckoutIntegration_Model_OauthService
      * @return int|null
      * @throws Mage_Core_Exception
      */
-    public static function validateAccessTokenRequest(array $request, $requestUrl, $httpMethod = 'POST')
-    {
+    public static function validateAccessTokenRequest(
+        array $request,
+        $requestUrl,
+        $httpMethod = 'POST',
+        $headerType = 'oauth'
+    ) {
+        if ($headerType === 'Bearer') {
+            $tokenModel = Mage::getModel(Bold_CheckoutIntegration_Model_Oauth_Token::RESOURCE)->load(
+                $request['oauth_token'],
+                'token'
+            );
+            return $tokenModel->getConsumerId();
+        }
         $required = [
             'oauth_consumer_key',
             'oauth_signature',
