@@ -222,74 +222,110 @@
             <carts>
                 <_cartId>
                     <estimate-shipping-methods>
-                        <POST>Bold_Checkout_Api_Platform_Cart::estimateShippingMethods</POST>
+                        <POST>
+                            <handler>Bold_Checkout_Api_Platform_Cart::estimateShippingMethods</handler>
+                        </POST>
                     </estimate-shipping-methods>
                 </_cartId>
             </carts>
             <customers>
                 <search>
-                    <GET>Bold_Checkout_Api_Platform_Customers::search</GET>
+                    <GET>
+                        <handler>Bold_Checkout_Api_Platform_Customers::search</handler>
+                    </GET>
                 </search>
             </customers>
             <directory>
                 <countries>
                     <_countryCode>
-                        <GET>Bold_Checkout_Api_Platform_Directory_Countries::getCountryInfo</GET>
+                        <GET>
+                            <handler>Bold_Checkout_Api_Platform_Directory_Countries::getCountryInfo</handler>
+                        </GET>
                     </_countryCode>
-                    <GET>Bold_Checkout_Api_Platform_Directory_Countries::getCountriesInfo</GET>
+                    <GET>
+                        <handler>Bold_Checkout_Api_Platform_Directory_Countries::getCountriesInfo</handler>
+                    </GET>
                 </countries>
             </directory>
             <orders>
                 <_orderId>
-                    <GET>Bold_Checkout_Api_Platform_Orders::get</GET>
+                    <GET>
+                        <handler>Bold_Checkout_Api_Platform_Orders::get</handler>
+                    </GET>
                 </_orderId>
-                <POST>Bold_Checkout_Api_Platform_Orders::update</POST>
+                <POST>
+                    <handler>Bold_Checkout_Api_Platform_Orders::update</handler>
+                </POST>
             </orders>
             <store>
                 <storeConfigs>
-                    <GET>Bold_Checkout_Api_Platform_Store_StoreManager::getStoreConfigs</GET>
+                    <GET>
+                        <handler>Bold_Checkout_Api_Platform_Store_StoreManager::getStoreConfigs</handler>
+                    </GET>
                 </storeConfigs>
             </store>
             <shops>
                 <_shopIdentifier>
                     <cart>
                         <_cartId>
-                            <GET>Bold_Checkout_Api_Platform_Cart::getCart</GET>
+                            <GET>
+                                <handler>Bold_Checkout_Api_Platform_Cart::getCart</handler>
+                            </GET>
                             <addresses>
-                                <POST>Bold_Checkout_Api_Platform_Cart::setAddresses</POST>
+                                <POST>
+                                    <handler>Bold_Checkout_Api_Platform_Cart::setAddresses</handler>
+                                </POST>
                             </addresses>
                             <coupons>
-                                <POST>Bold_Checkout_Api_Platform_Cart::setCoupon</POST>
-                                <DELETE>Bold_Checkout_Api_Platform_Cart::removeCoupon</DELETE>
+                                <POST>
+                                    <handler>Bold_Checkout_Api_Platform_Cart::setCoupon</handler>
+                                </POST>
+                                <DELETE>
+                                    <handler>Bold_Checkout_Api_Platform_Cart::removeCoupon</handler>
+                                </DELETE>
                             </coupons>
                             <shippingMethod>
-                                <POST>Bold_Checkout_Api_Platform_Cart::setShippingMethod</POST>
+                                <POST>
+                                    <handler>Bold_Checkout_Api_Platform_Cart::setShippingMethod</handler>
+                                </POST>
                             </shippingMethod>
                             <inventory>
-                                <GET>Bold_Checkout_Api_Platform_Cart_Inventory::getInventory</GET>
+                                <GET>
+                                    <handler>Bold_Checkout_Api_Platform_Cart_Inventory::getInventory</handler>
+                                </GET>
                             </inventory>
                         </_cartId>
                     </cart>
                     <customer>
                         <address>
                             <validate>
-                                <POST>Bold_Checkout_Api_Platform_Customer_Address::validate</POST>
+                                <POST>
+                                    <handler>Bold_Checkout_Api_Platform_Customer_Address::validate</handler>
+                                </POST>
                             </validate>
                         </address>
                     </customer>
                     <orders>
-                        <POST>Bold_Checkout_Api_Platform_Orders::create</POST>
+                        <POST>
+                            <handler>Bold_Checkout_Api_Platform_Orders::create</handler>
+                        </POST>
                     </orders>
                     <payments>
-                        <PUT>Bold_Checkout_Api_Platform_OrderPayments::update</PUT>
+                        <PUT>
+                            <handler>Bold_Checkout_Api_Platform_OrderPayments::update</handler>
+                        </PUT>
                     </payments>
                     <secret>
                         <register>
-                            <POST>Bold_Checkout_Api_Platform_RegisterSharedSecret::register</POST>
+                            <POST>
+                                <handler>Bold_Checkout_Api_Platform_RegisterSharedSecret::register</handler>
+                            </POST>
                         </register>
                     </secret>
                     <version>
-                        <GET>Bold_Checkout_Api_Platform_Version::getVersion</GET>
+                        <GET>
+                            <handler>Bold_Checkout_Api_Platform_Version::getVersion</handler>
+                        </GET>
                     </version>
                 </_shopIdentifier>
             </shops>

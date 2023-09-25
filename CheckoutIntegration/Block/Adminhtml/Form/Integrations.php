@@ -42,11 +42,6 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
     private $integrationAccessTokenRenderer;
 
     /**
-     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Secret
-     */
-    private $integrationTokenSecretRenderer;
-
-    /**
      * @inheirtDoc
      */
     protected function _construct()
@@ -85,35 +80,11 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
             ]
         );
         $this->addColumn(
-            'consumer_key',
-            [
-                'label' => Mage::helper('adminhtml')->__('Consumer Key'),
-                'style' => 'width:200px',
-                'renderer' => $this->getIntegrationConsumerKeyRenderer(),
-            ]
-        );
-        $this->addColumn(
-            'consumer_secret',
-            [
-                'label' => Mage::helper('adminhtml')->__('Consumer Secret'),
-                'style' => 'width:200px',
-                'renderer' => $this->getIntegrationConsumerSecretRenderer(),
-            ]
-        );
-        $this->addColumn(
             'access_token',
             [
                 'label' => Mage::helper('adminhtml')->__('Access Token'),
                 'style' => 'width:200px',
                 'renderer' => $this->getIntegrationAccessTokenRenderer(),
-            ]
-        );
-        $this->addColumn(
-            'token_secret',
-            [
-                'label' => Mage::helper('adminhtml')->__('Access Token Secret'),
-                'style' => 'width:200px',
-                'renderer' => $this->getIntegrationTokenSecretRenderer(),
             ]
         );
         $this->addColumn(
@@ -155,13 +126,16 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
      * Load integration by website id.
      *
      * @return Bold_CheckoutIntegration_Model_Integration[]
-     * @throws Mage_Core_Exception
      */
     private function getIntegrations()
     {
-        $element = $this->getElement();
-        $websiteId = (int)$element->getScopeId();
-        return Bold_CheckoutIntegration_Model_IntegrationService::findByWebsiteId($websiteId);
+        try {
+            $element = $this->getElement();
+            $websiteId = (int)$element->getScopeId();
+            return Bold_CheckoutIntegration_Model_IntegrationService::findByWebsiteId($websiteId);
+        } catch (Exception $e) {
+            return [];
+        }
     }
 
     /**
@@ -281,22 +255,5 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
             );
         }
         return $this->integrationAccessTokenRenderer;
-    }
-
-    /**
-     * Retrieve renderer for integration token secret.
-     *
-     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Secret
-     */
-    private function getIntegrationTokenSecretRenderer()
-    {
-        if (!$this->integrationTokenSecretRenderer) {
-            $this->integrationTokenSecretRenderer = $this->getLayout()->createBlock(
-                'bold_checkout_integration/adminhtml_form_field_token_secret',
-                '',
-                ['is_render_to_js_template' => true]
-            );
-        }
-        return $this->integrationTokenSecretRenderer;
     }
 }

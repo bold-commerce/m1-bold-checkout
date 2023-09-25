@@ -22,13 +22,15 @@ class Bold_CheckoutIntegration_Model_RequestService
      * Extract data from request.
      *
      * @param Zend_Controller_Request_Http $httpRequest
+     * @param string $headerType
      * @return array
      * @throws Zend_Controller_Request_Exception
      */
-    public static function prepareRequest(Zend_Controller_Request_Http $httpRequest)
+    public static function prepareRequest(Zend_Controller_Request_Http $httpRequest, $headerType = 'oauth')
     {
         return self::processRequest(
             $httpRequest->getHeader('Authorization'),
+            $headerType,
             $httpRequest->getHeader(\Zend_Http_Client::CONTENT_TYPE),
             $httpRequest->getRawBody(),
             self::getRequestUrl($httpRequest)
@@ -44,10 +46,15 @@ class Bold_CheckoutIntegration_Model_RequestService
      * @param string $requestUrl
      * @return array
      */
-    private static function processRequest($authHeaderValue, $contentTypeHeader, $requestBodyString, $requestUrl)
-    {
+    private static function processRequest(
+        $authHeaderValue,
+        $authTypeHeader,
+        $contentTypeHeader,
+        $requestBodyString,
+        $requestUrl
+    ) {
         $protocolParams = [];
-        if (!self::processHeader($authHeaderValue, $protocolParams)) {
+        if (!self::processHeader($authHeaderValue, $protocolParams, $authTypeHeader)) {
             return [];
         }
         if ($requestBodyString !== null && $contentTypeHeader
@@ -78,10 +85,15 @@ class Bold_CheckoutIntegration_Model_RequestService
      *
      * @param string $authHeaderValue
      * @param array $protocolParams
+     * @param string $authTypeHeader
      * @return bool
      */
-    private static function processHeader($authHeaderValue, &$protocolParams)
+    private static function processHeader($authHeaderValue, &$protocolParams, $authTypeHeader)
     {
+        if ($authTypeHeader === 'Bearer') {
+            $protocolParams['oauth_token'] = str_replace('Bearer ', '', $authHeaderValue);
+            return true;
+        }
         $oauthValuePosition = stripos(($authHeaderValue ?: ''), 'oauth ');
         if ($authHeaderValue && $oauthValuePosition !== false) {
             // Ignore anything before and including 'OAuth ' (trailing values validated later)
