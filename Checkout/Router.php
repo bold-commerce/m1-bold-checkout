@@ -97,8 +97,7 @@ class Bold_Checkout_Router
      * @param Zend_Controller_Request_Http $request
      * @param Zend_Controller_Response_Http $response
      * @return mixed
-     * @throws InvalidArgumentException
-     * @throws BadFunctionCallException
+     * @throws ReflectionException
      */
     private function invokeHandler(
         $name,
@@ -143,12 +142,20 @@ class Bold_Checkout_Router
             $this->mage->log($tracingId . ': Matched route.', $websiteId);
             $this->logRequest($tracingId, $request, $websiteId);
             $response = $this->getFront()->getResponse();
+            list($service, $matchedArguments) = $handlerFunction;
             try {
-                $processedRequest = Bold_CheckoutIntegration_Model_RequestService::prepareRequest($request);
+                $headerType = isset($service['authorization_header_type'])
+                    ? $service['authorization_header_type']
+                    : null;
+                $processedRequest = Bold_CheckoutIntegration_Model_RequestService::prepareRequest(
+                    $request,
+                    $headerType
+                );
                 $consumerId = Bold_CheckoutIntegration_Model_OauthService::validateAccessTokenRequest(
                     $processedRequest,
                     Bold_CheckoutIntegration_Model_RequestService::getRequestUrl($request),
-                    $request->getMethod()
+                    $request->getMethod(),
+                    $headerType
                 );
             } catch (Exception $e) {
                 $consumerId = null;
@@ -161,9 +168,11 @@ class Bold_Checkout_Router
                 return $response;
             }
             try {
-                list($functionName, $matchedArguments) = $handlerFunction;
                 $response = $this->invokeHandler(
-                    $functionName, $matchedArguments, $request, $response
+                    isset($service['handler']) ? $service['handler'] : '::' ,
+                    $matchedArguments,
+                    $request,
+                    $response
                 ) ?: $response;
             } catch (Exception $e) {
                 if ($this->mage->getIsDeveloperMode()) {
