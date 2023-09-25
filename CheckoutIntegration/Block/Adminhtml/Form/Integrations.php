@@ -27,16 +27,6 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
     private $deleteButtonRenderer;
 
     /**
-     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Key
-     */
-    private $integrationConsumerKeyRenderer;
-
-    /**
-     * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Secret
-     */
-    private $integrationConsumerSecretRenderer;
-
-    /**
      * @var null|Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Token_Access
      */
     private $integrationAccessTokenRenderer;
@@ -204,40 +194,6 @@ class Bold_CheckoutIntegration_Block_Adminhtml_Form_Integrations extends
             );
         }
         return $this->deleteButtonRenderer;
-    }
-
-    /**
-     * Retrieve renderer for integration consumer key.
-     *
-     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Key
-     */
-    private function getIntegrationConsumerKeyRenderer()
-    {
-        if (!$this->integrationConsumerKeyRenderer) {
-            $this->integrationConsumerKeyRenderer = $this->getLayout()->createBlock(
-                'bold_checkout_integration/adminhtml_form_field_consumer_key',
-                '',
-                ['is_render_to_js_template' => true]
-            );
-        }
-        return $this->integrationConsumerKeyRenderer;
-    }
-
-    /**
-     * Retrieve renderer for integration consumer key.
-     *
-     * @return Bold_CheckoutIntegration_Block_Adminhtml_Form_Field_Consumer_Secret
-     */
-    private function getIntegrationConsumerSecretRenderer()
-    {
-        if (!$this->integrationConsumerSecretRenderer) {
-            $this->integrationConsumerSecretRenderer = $this->getLayout()->createBlock(
-                'bold_checkout_integration/adminhtml_form_field_consumer_secret',
-                '',
-                ['is_render_to_js_template' => true]
-            );
-        }
-        return $this->integrationConsumerSecretRenderer;
     }
 
     /**
