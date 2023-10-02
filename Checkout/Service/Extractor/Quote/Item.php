@@ -278,16 +278,26 @@ class Bold_Checkout_Service_Extractor_Quote_Item
         Mage_Sales_Model_Quote_Item $item
     ) {
         $itemTaxDetails = [];
+        $itemTaxAmount = $item->getTaxAmount();
         foreach ($quote->getTaxesForItems() as $itemId => $taxDetails) {
             if ((int)$item->getId() !== (int)$itemId) {
                 continue;
             }
+            $appliedTaxNumber = count($taxDetails);
+            $i = 1;
             foreach ($taxDetails as $tax) {
+                $calculatedAmount = Mage::app()->getStore()->roundPrice($item->getPrice() * ($tax['percent'] / 100));
+                $amount = $i < $appliedTaxNumber && $calculatedAmount < $itemTaxAmount
+                    ? $calculatedAmount
+                    : $itemTaxAmount;
+                $itemTaxAmount = $itemTaxAmount - $amount;
                 $itemTaxDetails[] = [
                     'id' => $tax['id'],
+                    'amount' => $amount,
                     'percent' => $tax['percent'],
                     'rates' => $tax['rates'],
                 ];
+                $i++;
             }
         }
         return $itemTaxDetails;

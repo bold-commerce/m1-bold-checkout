@@ -38,22 +38,19 @@ class Bold_CheckoutIntegration_Model_Oauth_Token extends Mage_Core_Model_Abstrac
     {
         $tokenData = $this->getResource()->selectTokenByType($consumerId, self::TYPE_VERIFIER);
         $this->setData($tokenData ?: []);
-        if (!$this->getId()) {
-            $this->setData(
-                [
-                    'consumer_id' => $consumerId,
-                    'type' => self::TYPE_VERIFIER,
-                    'token' => Bold_CheckoutIntegration_Model_TokenService::generateToken(),
-                    'secret' => Bold_CheckoutIntegration_Model_TokenService::generateTokenSecret(),
-                    'verifier' => Bold_CheckoutIntegration_Model_TokenService::generateVerifier(),
-                    'callback_url' => Bold_CheckoutIntegration_Model_TokenService::CALLBACK_ESTABLISHED,
-                    'user_type' => Bold_CheckoutIntegration_Model_Oauth_Token_Provider::USER_TYPE_INTEGRATION,
-                    //As of now only integrations use Oauth
-                ]
-            );
-            $this->validate();
-            $this->save();
-        }
+        $this->setData(
+            [
+                'consumer_id' => $consumerId,
+                'type' => self::TYPE_VERIFIER,
+                'token' => Bold_CheckoutIntegration_Model_TokenService::generateToken(),
+                'secret' => Bold_CheckoutIntegration_Model_TokenService::generateTokenSecret(),
+                'verifier' => Bold_CheckoutIntegration_Model_TokenService::generateVerifier(),
+                'callback_url' => Bold_CheckoutIntegration_Model_TokenService::CALLBACK_ESTABLISHED,
+                'user_type' => Bold_CheckoutIntegration_Model_Oauth_Token_Provider::USER_TYPE_INTEGRATION,
+            ]
+        );
+        $this->validate();
+        $this->save();
         return $this;
     }
 
