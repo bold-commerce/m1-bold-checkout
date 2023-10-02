@@ -178,9 +178,9 @@
                 <realtime_enabled>1</realtime_enabled>
                 <url>https://api.boldcommerce.com/</url>
                 <checkout_url>https://checkout.boldcommerce.com/</checkout_url>
-                <platform_connector_url>https://adobe-commerce-connector.boldapps.net/platform/shops/</platform_connector_url>
-                <integration_callback_url>https://adobe-commerce-connector.boldapps.net/platform/oauth/callback/</integration_callback_url>
-                <integration_identity_url>https://adobe-commerce-connector.boldapps.net/platform/oauth/identify/</integration_identity_url>
+                <platform_connector_url>https://magento-1-connector.boldapps.net/platform/shops/</platform_connector_url>
+                <integration_callback_url>https://magento-1-connector.boldapps.net/platform/oauth/callback/</integration_callback_url>
+                <integration_identity_url>https://magento-1-connector.boldapps.net/platform/oauth/identify/</integration_identity_url>
                 <weight_unit>kg</weight_unit>
                 <weight_conversion_rate>1000</weight_conversion_rate>
                 <log>0</log>
