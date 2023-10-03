@@ -371,11 +371,13 @@ class Bold_Checkout_Api_Platform_Cart
      */
     private static function prepareStore(Mage_Sales_Model_Quote $quote)
     {
+        Mage::app()->loadArea(Mage_Core_Model_App_Area::AREA_FRONTEND);
         Mage::app()->setCurrentStore($quote->getStoreId());
         Mage::app()->getStore()->setCurrentCurrencyCode($quote->getQuoteCurrencyCode());
         /** @var Mage_Checkout_Model_Session $checkoutSession */
         $checkoutSession = Mage::getSingleton('checkout/session');
         $checkoutSession->setQuoteId($quote->getId());
+        $checkoutSession->replaceQuote($quote);
         /** @var Mage_Customer_Model_Session $customerSession */
         $customerSession = Mage::getSingleton('customer/session');
         $customerSession->setCustomerId($quote->getCustomerId());
