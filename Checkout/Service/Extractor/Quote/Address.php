@@ -53,26 +53,7 @@ class Bold_Checkout_Service_Extractor_Quote_Address
         $street = $address->getStreet1()
             ? [$address->getStreet1(), $address->getStreet2()]
             : [''];
-        $discounts = [];
-        if ($address->getDiscountAmount()) {
-            $ruleIds = $address->getAppliedRuleIds();
-            if (!$ruleIds) {
-                return [];
-            }
-            $ruleIds = explode(',', $ruleIds);
-            $rule = Mage::getModel('salesrule/rule')->load($ruleIds[0]);
-            $discounts[] = [
-                'discount_data' => [
-                    'amount' => (float)$address->getDiscountAmount(),
-                    'base_amount' => (float)$address->getBaseDiscountAmount(),
-                    'original_amount' => (float)$address->getDiscountAmount(),
-                    'base_original_amount' => (float)$address->getBaseDiscountAmount(),
-                ],
-                'rule_label' => $rule->getName(),
-                'rule_id' => (int)$rule->getId(),
-            ];
-        }
-        $address =  [
+        return [
             'id' => (int)$address->getId() ?: null,
             'region' => $address->getRegion(),
             'region_id' => (int)$address->getRegionId() ?: null,
@@ -88,9 +69,5 @@ class Bold_Checkout_Service_Extractor_Quote_Address
             'same_as_billing' => (int)$address->getSameAsBilling(),
             'save_in_address_book' => (int)$address->getSaveInAddressBook(),
         ];
-        if ($discounts) {
-            $address['extension_attributes']['discounts'] = $discounts;
-        }
-        return $address;
     }
 }

@@ -229,7 +229,9 @@
                 </_cartId>
             </carts>
             <customers>
-                <POST>Bold_Checkout_Api_Platform_Customers::save</POST>
+                <POST>
+                    <handler>Bold_Checkout_Api_Platform_Customers::save</handler>
+                </POST>
                 <search>
                     <GET>
                         <handler>Bold_Checkout_Api_Platform_Customers::search</handler>

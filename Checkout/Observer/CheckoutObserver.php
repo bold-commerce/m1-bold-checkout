@@ -47,10 +47,11 @@ class Bold_Checkout_Observer_CheckoutObserver
         $checkoutSession = Mage::getSingleton('checkout/session');
         try {
             $checkoutData = Bold_Checkout_Api_Bold_Orders_BoldOrder::init($quote);
+            $checkoutSession->setBoldCheckoutData($checkoutData);
             if ($boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
-                $checkoutSession->setBoldCheckoutData($checkoutData);
                 return;
             }
+            Bold_Checkout_StorefrontService::call('GET', 'refresh');
             $orderId = $checkoutData->data->public_order_id;
             $token = $checkoutData->data->jwt_token;
             $checkoutUrl = $boldConfig->getCheckoutUrl($websiteId);

@@ -38,7 +38,7 @@ class Bold_CheckoutIntegration_Model_Oauth_Token extends Mage_Core_Model_Abstrac
     {
         $tokenData = $this->getResource()->selectTokenByType($consumerId, self::TYPE_VERIFIER);
         $this->setData($tokenData ?: []);
-        $this->setData(
+        $this->addData(
             [
                 'consumer_id' => $consumerId,
                 'type' => self::TYPE_VERIFIER,

@@ -66,7 +66,6 @@ class Bold_Checkout_Service_Extractor_Quote
                             'address' => $shippingAddress,
                             'method' => $quote->getShippingAddress()->getShippingMethod(),
                         ],
-                        'items' => $items,
                     ],
                 ],
                 'shipping_tax_amount' => (float)$quote->getShippingAddress()->getShippingTaxAmount(),
