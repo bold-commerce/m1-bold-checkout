@@ -80,8 +80,6 @@ class Bold_Checkout_Service_Extractor_Quote_Item
      */
     private static function extractLineItem(Mage_Sales_Model_Quote_Item $item)
     {
-        /** @var Mage_Catalog_Helper_Product_Configuration $helper */
-        $helper = Mage::helper('catalog/product_configuration');
         $lineItem = new stdClass();
         $lineItem->id = (int)$item->getProduct()->getId();
         $lineItem->quantity = $item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty();
@@ -93,24 +91,6 @@ class Bold_Checkout_Service_Extractor_Quote_Item
         $lineItem->requires_shipping = !$item->getIsVirtual();
         $lineItem->line_item_key = (string)$item->getId();
         $lineItem->price = self::getLineItemPrice($item);
-        $lineItem->line_item_properties = [];
-        $item = $item->getParentItem() ?: $item;
-        if ($item->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
-            foreach ($helper->getConfigurableOptions($item) as $option) {
-                $label = Mage::helper('core')->escapeHtml($option['label']);
-                $value = Mage::helper('core')->escapeHtml($option['value']);
-                $lineItem->line_item_properties[$label] = $value;
-            }
-        }
-        if ($item->getProductType() === Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
-            self::addBundleOptions($item, $lineItem);
-        }
-        /** @var Bold_Checkout_Model_Option_Formatter $formatter */
-        $formatter = Mage::getSingleton(Bold_Checkout_Model_Option_Formatter::MODEL_CLASS);
-        foreach ($helper->getCustomOptions($item) as $customOption) {
-            $label = Mage::helper('core')->escapeHtml($customOption['label']);
-            $lineItem->line_item_properties[$label] = $formatter->format($customOption);
-        }
         Mage::dispatchEvent('bold_checkout_line_item_extract_after', ['line_item' => $lineItem, 'quote_item' => $item]);
 
         return $lineItem;
@@ -182,30 +162,6 @@ class Bold_Checkout_Service_Extractor_Quote_Item
     {
         $item = $item->getParentItem() ?: $item;
         return (int)round((float)$item->getPrice() * 100);
-    }
-
-    /**
-     * Add bundle options to line item properties.
-     *
-     * @param Mage_Sales_Model_Quote_Item $item
-     * @param stdClass $lineItem
-     * @return void
-     */
-    private static function addBundleOptions(Mage_Sales_Model_Quote_Item $item, stdClass $lineItem)
-    {
-        /** @var Mage_Bundle_Model_Product_Type $bundleType */
-        $bundleType = Mage::getSingleton('bundle/product_type');
-        $options = $bundleType->getOptionsCollection($item->getProduct());
-        $children = $item->getChildren();
-        foreach (array_values($options->getItems()) as $i => $option) {
-            $childItem = isset($children[$i]) ? $children[$i] : null;
-            if (!$childItem) {
-                continue;
-            }
-            $qty = (int)$childItem->getQty();
-            $name = $childItem->getName();
-            $lineItem->line_item_properties[$option->getDefaultTitle()] = $qty . 'x' . $name;
-        }
     }
 
     /**

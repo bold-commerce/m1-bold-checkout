@@ -49,9 +49,9 @@ class Bold_Checkout_Service_Extractor_Quote_Totals_Segment
         $taxGrandTotalDetails = [];
         foreach ($total->getFullInfo() as $info) {
             $taxGrandTotalDetails[] = [
-                'amount' => (float)$info['amount'],
+                'amount' => Mage::app()->getStore()->roundPrice($info['amount']),
                 'rates' => $info['rates'],
-                'base_amount' => (float)$info['base_amount'],
+                'base_amount' => Mage::app()->getStore()->roundPrice($info['base_amount']),
             ];
         }
         return $taxGrandTotalDetails;

@@ -186,7 +186,9 @@ class Bold_Checkout_Service_Order_CreateOrder
         $quote->getPayment()->setStoreId($quote->getStoreId());
         $quote->getPayment()->setCustomerPaymentId($quote->getCustomerId());
         self::prepareQuoteForCustomer($quote);
+        $quote->getBillingAddress()->setShouldIgnoreValidation(true);
         if (!$quote->isVirtual()) {
+            $quote->getShippingAddress()->setShouldIgnoreValidation(true);
             $quote->getShippingAddress()->setCollectShippingRates(true);
         }
         $quote->setTotalsCollectedFlag(false);
