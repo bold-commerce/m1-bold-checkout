@@ -48,6 +48,14 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements
             ]
         );
         $this->addColumn(
+            'meta_data_field',
+            [
+                'label' => Mage::helper('core')->__('Field key'),
+                'class' => 'input-text required-entry',
+                'style' => 'width:50px',
+            ]
+        );
+        $this->addColumn(
             'input_label',
             [
                 'label' => Mage::helper('core')->__('Label'),
@@ -62,14 +70,6 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements
             ]
         );
         $this->addColumn(
-            'meta_data_field',
-            [
-                'label' => Mage::helper('core')->__('Field key'),
-                'class' => 'required-entry',
-                'style' => 'width:50px',
-            ]
-        );
-        $this->addColumn(
             'input_default',
             [
                 'label' => Mage::helper('core')->__('Default'),
@@ -77,10 +77,17 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements
             ]
         );
         $this->addColumn(
+            'input_regex',
+            [
+                'label' => Mage::helper('core')->__('Validation (RegEx)'),
+                'style' => 'width:100px',
+            ]
+        );
+        $this->addColumn(
             'order_asc',
             [
                 'label' => Mage::helper('core')->__('Index'),
-                'class' => 'validate-greater-than-zero',
+                'class' => 'input-text validate-greater-than-zero',
                 'style' => 'width:50px',
             ]
         );
