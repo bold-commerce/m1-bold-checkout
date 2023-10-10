@@ -17,7 +17,8 @@ class Bold_Checkout_Observer_LifeElementsObserver
     public function syncElements(Varien_Event_Observer $observer)
     {
         $event = $observer->getEvent();
-        $websiteId = (int)$event->getWebsite();
+        $websiteId = Mage::app()->getWebsite($event->getWebsite())->getId()
+            ?: Mage::app()->getDefaultStoreView()->getWebsiteId();
         /** @var Bold_Checkout_Model_Config $boldConfig */
         $boldConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         if (!$boldConfig->isCheckoutEnabled($websiteId)
