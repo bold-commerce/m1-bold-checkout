@@ -52,6 +52,8 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Life_Elements_Type
             ['label' => 'Textarea', 'value' => 'textarea'],
             ['label' => 'Checkbox', 'value' => 'checkbox'],
             ['label' => 'HTML', 'value' => 'html'],
+            ['label' => 'Dropdown', 'value' => 'dropdown'],
+            ['label' => 'Datepicker', 'value' => 'datepicker'],
         ];
     }
 }
