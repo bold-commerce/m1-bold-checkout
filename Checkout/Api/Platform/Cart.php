@@ -26,6 +26,7 @@ class Bold_Checkout_Api_Platform_Cart
         }
         try {
             self::prepareStore($quote);
+            $quote->getShippingAddress()->setCollectShippingRates(true);
             $quote->collectTotals();
             $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
         } catch (Mage_Core_Model_Store_Exception $e) {
@@ -59,22 +60,17 @@ class Bold_Checkout_Api_Platform_Cart
             if ($payload->billing_address === null) {
                 $quote->removeAddress($quote->getBillingAddress()->getId());
                 $quote->removeAddress($quote->getShippingAddress()->getId());
+                self::prepareStore($quote);
                 $quote->collectTotals();
                 $quote->save();
                 $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
                 return Bold_Checkout_Rest::buildResponse($response, json_encode($quoteData));
             }
-            $billingAddress = self::getAddress($payload->billing_address);
-            $shippingAddress = $payload->shipping_address !== null
-                ? self::getAddress($payload->shipping_address)
-                : null;
-            $shippingAddress = $shippingAddress === null || $shippingAddress->getSameAsBilling()
-                ? $billingAddress
-                : $shippingAddress;
-            self::setBillingAddress($quote, $billingAddress);
-            if (!$quote->isVirtual()) {
-                self::setShippingAddress($quote, $shippingAddress);
+            self::updateAddress($quote->getBillingAddress(), $payload->billing_address);
+            if (!$quote->isVirtual() && $payload->shipping_address) {
+                self::updateAddress($quote->getShippingAddress(), $payload->shipping_address);
             }
+            self::prepareStore($quote);
             $quote->collectTotals();
             $quote->save();
             $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
@@ -260,10 +256,6 @@ class Bold_Checkout_Api_Platform_Cart
         Mage_Sales_Model_Quote $quote,
         Mage_Sales_Model_Quote_Address $shippingAddress
     ) {
-        $shippingMethod = $quote->getShippingAddress()->getShippingMethod();
-        if (!$shippingAddress->getShippingMethod() && $shippingMethod) {
-            $shippingAddress->setShippingMethod($shippingMethod);
-        }
         $shippingAddress->setCustomerId($quote->getCustomerId());
         $quote->removeAddress($quote->getShippingAddress()->getId());
         $quote->setShippingAddress($shippingAddress);
@@ -274,13 +266,12 @@ class Bold_Checkout_Api_Platform_Cart
     /**
      * Get address from payload.
      *
+     * @param Mage_Sales_Model_Quote_Address $address
      * @param stdClass $addressPayload
      * @return Mage_Sales_Model_Quote_Address
      */
-    private static function getAddress(stdClass $addressPayload)
+    private static function updateAddress(Mage_Sales_Model_Quote_Address $address, stdClass $addressPayload)
     {
-        /** @var Mage_Sales_Model_Quote_Address $address */
-        $address = Mage::getModel('sales/quote_address');
         $email = isset($addressPayload->email)
             ? $addressPayload->email
             : null;

@@ -5,8 +5,6 @@
  */
 class Bold_Checkout_Service_Extractor_Quote_ShippingMethods
 {
-    private static $addedCodes = [];
-
     /**
      * Extract shipping methods.
      *
@@ -17,15 +15,13 @@ class Bold_Checkout_Service_Extractor_Quote_ShippingMethods
     public static function extract(Mage_Sales_Model_Quote $quote)
     {
         $shippingMethods = [];
-        foreach ($quote->getShippingAddress()->getShippingRatesCollection() as $rate) {
-            $shippingMethod = self::extractShippingMethod($rate);
-            if (in_array($shippingMethod['carrier_code'] . '_' . $shippingMethod['method_code'], self::$addedCodes)) {
-                continue;
+        foreach ($quote->getShippingAddress()->getGroupedAllShippingRates() as $rates) {
+            foreach ($rates as $rate) {
+                $shippingMethod = self::extractShippingMethod($rate);
+                $shippingMethods[$shippingMethod['carrier_code'] . '_' . $shippingMethod['method_code']] = $shippingMethod;
             }
-            self::$addedCodes[] = $shippingMethod['carrier_code'] . '_' . $shippingMethod['method_code'];
-            $shippingMethods[] = $shippingMethod;
         }
-        return $shippingMethods;
+        return array_values($shippingMethods);
     }
 
     /**

@@ -309,7 +309,7 @@ class Bold_CheckoutIntegration_Model_OauthService
         }
         $consumerData = $consumer->getData();
         $verifier = Mage::getModel(Bold_CheckoutIntegration_Model_Oauth_Token::RESOURCE)->createVerifierToken($consumerId);
-        $storeBaseUrl = Mage::getBaseUrl();
+        $storeBaseUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
         $payload = [
             'oauth_consumer_key' => $consumerData['consumer_key'],
             'oauth_consumer_secret' => $consumerData['secret'],
