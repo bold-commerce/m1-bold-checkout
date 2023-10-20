@@ -60,17 +60,18 @@ class Bold_Checkout_Api_Platform_Cart
             if ($payload->billing_address === null) {
                 $quote->removeAddress($quote->getBillingAddress()->getId());
                 $quote->removeAddress($quote->getShippingAddress()->getId());
-                self::prepareStore($quote);
+                $quote->setDataChanges(true);
                 $quote->collectTotals();
                 $quote->save();
                 $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
                 return Bold_Checkout_Rest::buildResponse($response, json_encode($quoteData));
             }
-            self::updateAddress($quote->getBillingAddress(), $payload->billing_address);
+            self::updateAddress($quote->getBillingAddress(), $payload->billing_address, $quote);
             if (!$quote->isVirtual() && $payload->shipping_address) {
-                self::updateAddress($quote->getShippingAddress(), $payload->shipping_address);
+                self::updateAddress($quote->getShippingAddress(), $payload->shipping_address, $quote);
+                $quote->getShippingAddress()->setCollectShippingRates(true);
             }
-            self::prepareStore($quote);
+            $quote->setDataChanges(true);
             $quote->collectTotals();
             $quote->save();
             $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
@@ -229,49 +230,19 @@ class Bold_Checkout_Api_Platform_Cart
     }
 
     /**
-     * Set cart billing address.
-     *
-     * @param Mage_Sales_Model_Quote $quote
-     * @param Mage_Sales_Model_Quote_Address $billingAddress
-     * @return void
-     */
-    private static function setBillingAddress(
-        Mage_Sales_Model_Quote $quote,
-        Mage_Sales_Model_Quote_Address $billingAddress
-    ) {
-        $billingAddress->setCustomerId($quote->getCustomerId());
-        $quote->removeAddress($quote->getBillingAddress()->getId());
-        $quote->setBillingAddress($billingAddress);
-        $quote->setDataChanges(true);
-    }
-
-    /**
-     * Set shipping address to cart.
-     *
-     * @param Mage_Sales_Model_Quote $quote
-     * @param Mage_Sales_Model_Quote_Address $shippingAddress
-     * @return void
-     */
-    private static function setShippingAddress(
-        Mage_Sales_Model_Quote $quote,
-        Mage_Sales_Model_Quote_Address $shippingAddress
-    ) {
-        $shippingAddress->setCustomerId($quote->getCustomerId());
-        $quote->removeAddress($quote->getShippingAddress()->getId());
-        $quote->setShippingAddress($shippingAddress);
-        $quote->getShippingAddress()->setCollectShippingRates(true);
-        $quote->setDataChanges(true);
-    }
-
-    /**
      * Get address from payload.
      *
      * @param Mage_Sales_Model_Quote_Address $address
      * @param stdClass $addressPayload
-     * @return Mage_Sales_Model_Quote_Address
+     * @param Mage_Sales_Model_Quote $quote
+     * @return void
      */
-    private static function updateAddress(Mage_Sales_Model_Quote_Address $address, stdClass $addressPayload)
-    {
+    private static function updateAddress(
+        Mage_Sales_Model_Quote_Address $address,
+        stdClass $addressPayload,
+        Mage_Sales_Model_Quote $quote
+    ) {
+        $address->setCustomerId($quote->getCustomerId());
         $email = isset($addressPayload->email)
             ? $addressPayload->email
             : null;
@@ -327,7 +298,6 @@ class Bold_Checkout_Api_Platform_Cart
         $address->setLastname($lastname);
         $address->setSameAsBilling($sameAsBilling);
         $address->setSaveInAddressBook($saveInAddressBook);
-        return $address;
     }
 
     /**
