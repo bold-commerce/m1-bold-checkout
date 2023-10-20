@@ -15,11 +15,9 @@ class Bold_Checkout_Service_Extractor_Quote_ShippingMethods
     public static function extract(Mage_Sales_Model_Quote $quote)
     {
         $shippingMethods = [];
-        foreach ($quote->getShippingAddress()->getGroupedAllShippingRates() as $rates) {
-            foreach ($rates as $rate) {
-                $shippingMethod = self::extractShippingMethod($rate);
-                $shippingMethods[$shippingMethod['carrier_code'] . '_' . $shippingMethod['method_code']] = $shippingMethod;
-            }
+        foreach ($quote->getShippingAddress()->getShippingRatesCollection() as $rate) {
+            $shippingMethod = self::extractShippingMethod($rate);
+            $shippingMethods[$shippingMethod['carrier_code'] . '_' . $shippingMethod['method_code']] = $shippingMethod;
         }
         return array_values($shippingMethods);
     }
