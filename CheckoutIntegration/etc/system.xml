@@ -6,7 +6,7 @@
                 <bold_checkout_integration translate="label">
                     <label>Bold Checkout Platform Connector Integrations</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>500</sort_order>
+                    <sort_order>1003</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <fields>

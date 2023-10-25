@@ -140,7 +140,10 @@ class Bold_Checkout_Service_Extractor_Customer
     {
         foreach ($countries as $country) {
             if ($country->getCountryId() === $address->getCountryId()) {
-                return $country->getName();
+                /** @var Mage_Core_Model_Locale $locale */
+                $locale = Mage::getModel('core/locale');
+                $locale->setLocale('en_US');
+                return $locale->getCountryTranslation($country->getId());
             }
         }
         return 'N/A';

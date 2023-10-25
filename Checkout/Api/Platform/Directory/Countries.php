@@ -81,15 +81,20 @@ class Bold_Checkout_Api_Platform_Directory_Countries
      * @param string $storeLocale
      * @return \stdClass
      */
-    private static function setCountryInfo($country, $regions, $storeLocale)
+    private static function setCountryInfo($country, array $regions, $storeLocale)
     {
         $countryId = $country->getCountryId();
         $countryInfo = new \stdClass();
         $countryInfo->id = $countryId;
         $countryInfo->two_letter_abbreviation = $country->getData('iso2_code');
         $countryInfo->three_letter_abbreviation = $country->getData('iso3_code');
-        $countryInfo->full_name_locale = $country->getName($storeLocale);
-        $countryInfo->full_name_english = $country->getName('en_US');
+        /** @var Mage_Core_Model_Locale $locale */
+        $locale = Mage::getSingleton('core/locale');
+        $locale->setLocale($storeLocale);
+        $countryInfo->full_name_locale = $locale->getCountryTranslation($country->getId());
+        $locale = Mage::getModel('core/locale');
+        $locale->setLocale('en_US');
+        $countryInfo->full_name_english = $locale->getCountryTranslation($country->getId());
         if (array_key_exists($countryId, $regions)) {
             $regionsInfo = [];
             foreach ($regions[$countryId] as $id => $regionData) {

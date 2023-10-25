@@ -197,6 +197,7 @@
         <payment>
             <bold>
                 <model>Bold_Checkout_Service_PaymentMethod</model>
+                <active>1</active>
                 <title>Bold Payments</title>
             </bold>
         </payment>

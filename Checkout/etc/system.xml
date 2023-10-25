@@ -6,7 +6,7 @@
                 <bold translate="label">
                     <label>Bold Checkout Integration</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>100</sort_order>
+                    <sort_order>1000</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <fields>
@@ -40,7 +40,7 @@
                 <bold_checkout_life_elements translate="label">
                     <label>Bold Checkout Integration (LiFE) Elements</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>100</sort_order>
+                    <sort_order>1001</sort_order>
                     <show_in_default>0</show_in_default>
                     <show_in_website>1</show_in_website>
                     <fields>
@@ -58,7 +58,7 @@
                 <bold_advanced translate="label">
                     <label>Bold Checkout Integration Advanced Settings</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>101</sort_order>
+                    <sort_order>1002</sort_order>
                     <show_in_default>0</show_in_default>
                     <show_in_website>1</show_in_website>
                     <expanded>0</expanded>

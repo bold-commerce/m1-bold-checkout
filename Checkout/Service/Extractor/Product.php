@@ -89,7 +89,7 @@ class Bold_Checkout_Service_Extractor_Product
             'product_links' => [],
             'options' => self::extractOptions($product),
             'media_gallery_entries' => $mediaGalleryEntries,
-            'tier_prices' => $product->getFormatedTierPrice(),
+            'tier_prices' => [],
             'custom_attributes' => $customAttributes,
         ];
     }

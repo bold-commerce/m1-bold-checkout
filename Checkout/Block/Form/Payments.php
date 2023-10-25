@@ -22,7 +22,7 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
             $this->setTemplate('bold/checkout_tm_fire_checkout/onestep/form/payments.phtml');
             return;
         }
-        $this->setTemplate('bold/checkout_tm_fire_checkout/form/payments.phtml');
+        $this->setTemplate('bold/checkout/form/payments.phtml');
     }
 
     /**
