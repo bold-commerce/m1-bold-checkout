@@ -92,7 +92,7 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
         /** @var Bold_Checkout_Model_Config $config */
         $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         $shopId = $config->getShopIdentifier((int)Mage::app()->getWebsite()->getId());
-        return Bold_Checkout_StorefrontService::URL . $shopId . '/' . $boldCheckoutData->data->public_order_id . '/';
+        return Bold_Checkout_StorefrontClient::URL . $shopId . '/' . $boldCheckoutData->data->public_order_id . '/';
     }
 
     /**
@@ -126,7 +126,7 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
         $shopId = Bold_Checkout_Service_ShopIdentifier::getShopIdentifier($websiteId);
         $styles = $this->getStyles();
         if ($styles) {
-            Bold_Checkout_StorefrontService::call('POST', 'payments/styles', $styles);
+            Bold_Checkout_StorefrontClient::call('POST', 'payments/styles', $styles);
         }
         $orderId = $boldCheckoutData->data->public_order_id;
         $jwtToken = $boldCheckoutData->data->jwt_token;

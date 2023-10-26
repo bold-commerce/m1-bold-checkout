@@ -14,11 +14,10 @@ class Bold_Checkout_Client
      * @param string $url
      * @param int $websiteId
      * @param string|null $data
-     * @param bool $removeFlowId
      * @return string
      * @throws Mage_Core_Exception
      */
-    public static function call($method, $url, $websiteId, $data = null, $removeFlowId = false)
+    public static function call($method, $url, $websiteId, $data = null)
     {
         /** @var Bold_Checkout_Model_Config $config */
         $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
@@ -30,6 +29,6 @@ class Bold_Checkout_Client
             'Bold-API-Version-Date:' . self::BOLD_API_VERSION_DATE,
         ];
         $url = $config->getApiUrl($websiteId) . '/' . ltrim(str_replace('{{shopId}}', $shopId, $url), '/');
-        return Bold_Checkout_HttpClient::call($method, $url, $data, $headers, $removeFlowId);
+        return Bold_Checkout_HttpClient::call($method, $url, $websiteId, $data, $headers);
     }
 }

@@ -21,7 +21,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
             }
             $controllerAction = $event->getControllerAction();
             if (!$session->getQuote()->getCustomer()->getId()) {
-                $guestUpdateRequest = Bold_Checkout_StorefrontService::call(
+                $guestUpdateRequest = Bold_Checkout_StorefrontClient::call(
                     'POST',
                     'customer/guest',
                     Bold_Checkout_Service_Extractor_Quote_Guest::extract(
@@ -33,7 +33,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
                     return;
                 }
             }
-            $billingAddress = Bold_Checkout_StorefrontService::call(
+            $billingAddress = Bold_Checkout_StorefrontClient::call(
                 'POST',
                 'addresses/billing',
                 Bold_Checkout_Service_Extractor_Quote_Address::extractInBoldFormat(
@@ -49,7 +49,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
             if (!$useForShipping) {
                 return;
             }
-            $shippingAddress = Bold_Checkout_StorefrontService::call(
+            $shippingAddress = Bold_Checkout_StorefrontClient::call(
                 'POST',
                 'addresses/shipping',
                 Bold_Checkout_Service_Extractor_Quote_Address::extractInBoldFormat(
@@ -81,7 +81,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
         }
         $controllerAction = $event->getControllerAction();
         $quote = $controllerAction ? $controllerAction->getOnepage()->getQuote() : $event->getQuote();
-        $address = Bold_Checkout_StorefrontService::call(
+        $address = Bold_Checkout_StorefrontClient::call(
             'POST',
             'addresses/shipping',
             Bold_Checkout_Service_Extractor_Quote_Address::extractInBoldFormat(
@@ -130,7 +130,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
         $shippingLines = $this->getShippingLines();
         foreach ($shippingLines as $result) {
             if ($result->code === $shippingMethod) {
-                $result = Bold_Checkout_StorefrontService::call(
+                $result = Bold_Checkout_StorefrontClient::call(
                     'POST',
                     'shipping_lines',
                     ['index' => $result->id]
@@ -152,7 +152,7 @@ class Bold_Checkout_Observer_OnepageControllerObserver
     private function getShippingLines()
     {
         try {
-            $lines = Bold_Checkout_StorefrontService::call('GET', 'shipping_lines');
+            $lines = Bold_Checkout_StorefrontClient::call('GET', 'shipping_lines');
             if (isset($lines->errors)) {
                 return [];
             }

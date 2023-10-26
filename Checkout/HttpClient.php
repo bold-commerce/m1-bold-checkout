@@ -10,17 +10,15 @@ class Bold_Checkout_HttpClient
      *
      * @param string $method
      * @param string $url
+     * @param int $websiteId
      * @param string|null $data
      * @param array $headers
      * @return string
-     * @throws Mage_Core_Model_Store_Exception
-     * @phpcs:disable MEQP1.Security.DiscouragedFunction.Found
      */
-    public static function call($method, $url, $data = null, array $headers = [])
+    public static function call($method, $url, $websiteId, $data = null, array $headers = [])
     {
         /** @var Bold_Checkout_Model_Config $boldConfig */
         $boldConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        $websiteId = Mage::app()->getStore()->getWebsiteId();
         $tracingId = sha1(microtime());
         if ($boldConfig->isLogEnabled($websiteId)) {
             Mage::log(
