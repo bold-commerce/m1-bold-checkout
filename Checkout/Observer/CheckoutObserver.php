@@ -51,7 +51,7 @@ class Bold_Checkout_Observer_CheckoutObserver
             if ($boldConfig->isCheckoutTypeSelfHosted($websiteId)) {
                 return;
             }
-            Bold_Checkout_StorefrontService::call('GET', 'refresh');
+            Bold_Checkout_StorefrontClient::call('GET', 'refresh');
             $orderId = $checkoutData->data->public_order_id;
             $token = $checkoutData->data->jwt_token;
             $checkoutUrl = $boldConfig->getCheckoutUrl($websiteId);
@@ -88,12 +88,12 @@ class Bold_Checkout_Observer_CheckoutObserver
         if (!$boldCheckoutData || $paymentMethod !== Bold_Checkout_Service_PaymentMethod::CODE) {
             return;
         }
-        $taxes = Bold_Checkout_StorefrontService::call('POST', 'taxes');
+        $taxes = Bold_Checkout_StorefrontClient::call('POST', 'taxes');
         if (isset($taxes->errors)) {
             $this->throwException();
         }
         if ($order->getDiscountAmount()) {
-            $discounts = Bold_Checkout_StorefrontService::call(
+            $discounts = Bold_Checkout_StorefrontClient::call(
                 'POST',
                 'discounts',
                 ['code' => 'Discount']
@@ -102,7 +102,7 @@ class Bold_Checkout_Observer_CheckoutObserver
                 $this->throwException();
             }
         }
-        $processOrder = Bold_Checkout_StorefrontService::call('POST', 'process_order');
+        $processOrder = Bold_Checkout_StorefrontClient::call('POST', 'process_order');
         if (isset($processOrder->errors)) {
             $this->throwException();
         }

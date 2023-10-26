@@ -3,7 +3,7 @@
 /**
  * Perform requests to bold storefront service.
  */
-class Bold_Checkout_StorefrontService
+class Bold_Checkout_StorefrontClient
 {
     const URL = 'https://api.boldcommerce.com/checkout/storefront/';
 
@@ -35,6 +35,7 @@ class Bold_Checkout_StorefrontService
             Bold_Checkout_HttpClient::call(
                 $method,
                 $url,
+                $websiteId,
                 $body ? json_encode($body) : null,
                 $headers
             )

@@ -34,9 +34,9 @@ class Bold_Checkout_Service_ShopIdentifier
      *
      * @param int $websiteId
      * @throws Mage_Core_Exception
-     * @phpcs:disable Zend.NamingConventions.ValidVariableName.NotCamelCaps
      */
-    public static function updateShopIdentifier($websiteId) {
+    public static function updateShopIdentifier($websiteId)
+    {
         $websiteId = $websiteId ?: (int)Mage::app()->getDefaultStoreView()->getWebsiteId();
         /** @var Bold_Checkout_Model_Config $boldConfig */
         $boldConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
@@ -47,8 +47,8 @@ class Bold_Checkout_Service_ShopIdentifier
             'User-Agent:' . Bold_Checkout_Service_UserAgent::getUserAgent(),
             'Bold-API-Version-Date:' . Bold_Checkout_Client::BOLD_API_VERSION_DATE,
         ];
-        $url = $boldConfig->getApiUrl($websiteId). self::SHOP_INFO_URL;
-        $shopInfo = json_decode(Bold_Checkout_HttpClient::call('GET', $url, null, $headers));
+        $url = $boldConfig->getApiUrl($websiteId) . self::SHOP_INFO_URL;
+        $shopInfo = json_decode(Bold_Checkout_HttpClient::call('GET', $url, $websiteId, null, $headers));
         if (isset($shopInfo->errors)) {
             $error = current($shopInfo->errors);
             Mage::throwException($error->message);
