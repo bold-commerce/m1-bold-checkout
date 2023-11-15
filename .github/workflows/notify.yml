@@ -18,7 +18,7 @@ jobs:
     steps:
     - name: Github REST API Call
       env:
-        CI_TOKEN: ${{ secrets.access_token }}
+        CI_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         PARENT_REPO:  bold-commerce/m1-devbox 
         PARENT_BRANCH: main
         WORKFLOW_ID: 36051398
