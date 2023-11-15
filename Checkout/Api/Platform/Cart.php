@@ -136,7 +136,9 @@ class Bold_Checkout_Api_Platform_Cart
             }
             $quote->setTotalsCollectedFlag(false);
             $quote->setCouponCode($isCodeLengthValid ? $requestBody->couponCode : '')->collectTotals()->save();
-            if (!$isCodeLengthValid || $requestBody->couponCode !== $quote->getCouponCode()) {
+            $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
+            $validateCouponCodes = $config->getValidateCouponCodes((int)$quote->getStore()->getWebsiteId());
+            if ($validateCouponCodes && (!$isCodeLengthValid || $requestBody->couponCode !== $quote->getCouponCode())) {
                 $message = Mage::helper('core')->__(
                     'Coupon code "%s" is not valid.',
                     Mage::helper('core')->escapeHtml($requestBody->couponCode)

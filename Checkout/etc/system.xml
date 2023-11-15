@@ -201,11 +201,20 @@
                             <comment>Conversion rate to get product weight in grams. Change accordingly with the "Weight Unit" configuration.
                                 Used to properly synchronize products with Bold Checkout.</comment>
                         </weight_conversion_rate>
+                        <validate_coupon_codes translate="label">
+                            <label>Validate Coupon Codes</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>120</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <comment><![CDATA[Throw validation error for invalid coupon codes.]]></comment>
+                        </validate_coupon_codes>
                         <log translate="label">
                             <label>Enable Bold Checkout Requests Log</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>120</sort_order>
+                            <sort_order>130</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment><![CDATA[Log Bold Checkout requests for debugging purpose.]]></comment>

@@ -183,6 +183,7 @@
                 <integration_identity_url>https://magento-1-connector.boldapps.net/platform/oauth/identify/</integration_identity_url>
                 <weight_unit>kg</weight_unit>
                 <weight_conversion_rate>1000</weight_conversion_rate>
+                <validate_coupon_codes>1</validate_coupon_codes>
                 <log>0</log>
                 <self_hosted_enabled>0</self_hosted_enabled>
             </bold_advanced>

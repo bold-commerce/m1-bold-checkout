@@ -26,6 +26,7 @@ class Bold_Checkout_Model_Config
     const PATH_EXCLUDE_FOR = 'checkout/bold_advanced/exclude_for';
     const PATH_EXCLUDE_CUSTOMER_GROUPS_LIST = 'checkout/bold_advanced/exclude_customer_groups_list';
     const PATH_LIFE_ELEMENTS = 'checkout/bold_checkout_life_elements/life_elements';
+    const PATH_VALIDATE_COUPON_CODES = 'checkout/bold_advanced/validate_coupon_codes';
 
     /**
      * Values for self::PATH_ENABLED_FOR field.
@@ -327,5 +328,17 @@ class Bold_Checkout_Model_Config
     public function getIntegrationCallbackUrl($websiteId)
     {
         return rtrim(Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_INTEGRATION_CALLBACK_URL), '/');
+    }
+
+    /**
+     * Check if coupon codes should be validated.
+     *
+     * @param int $websiteId
+     * @return bool
+     * @throws Mage_Core_Exception
+     */
+    public function getValidateCouponCodes($websiteId)
+    {
+        return (bool)Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_VALIDATE_COUPON_CODES);
     }
 }
