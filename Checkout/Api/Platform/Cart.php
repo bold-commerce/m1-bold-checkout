@@ -26,7 +26,9 @@ class Bold_Checkout_Api_Platform_Cart
         }
         try {
             self::prepareStore($quote);
-            $quote->getShippingAddress()->setCollectShippingRates(true);
+            if (!$quote->getIsVirtual()) {
+                $quote->getShippingAddress()->setCollectShippingRates(true);
+            }
             $quote->collectTotals();
             $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
         } catch (Mage_Core_Model_Store_Exception $e) {
@@ -300,6 +302,7 @@ class Bold_Checkout_Api_Platform_Cart
         $address->setLastname($lastname);
         $address->setSameAsBilling($sameAsBilling);
         $address->setSaveInAddressBook($saveInAddressBook);
+        $address->setShouldIgnoreValidation(true);
     }
 
     /**
@@ -344,6 +347,10 @@ class Bold_Checkout_Api_Platform_Cart
         /** @var Mage_Customer_Model_Session $customerSession */
         $customerSession = Mage::getSingleton('customer/session');
         $customerSession->setCustomerId($quote->getCustomerId());
+        $quote->getBillingAddress()->setShouldIgnoreValidation(true);
+        if (!$quote->isVirtual()) {
+            $quote->getShippingAddress()->setShouldIgnoreValidation(true);
+        }
     }
 
     /**

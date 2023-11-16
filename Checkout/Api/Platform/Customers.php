@@ -103,7 +103,9 @@ class Bold_Checkout_Api_Platform_Customers
         $customer->setFirstname($firstname);
         $customer->setLastname($lastname);
         foreach ($addresses as $address) {
-            $customer->addAddress(Bold_Checkout_Service_Customer_Address_Convertor::getAddress($address));
+            $customerAddress = Bold_Checkout_Service_Customer_Address_Convertor::getAddress($address);
+            $customerAddress->setShouldIgnoreValidation(true);
+            $customer->addAddress($customerAddress);
         }
         return $customer;
     }
