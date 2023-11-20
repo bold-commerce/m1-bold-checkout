@@ -94,7 +94,7 @@ class Bold_Checkout_Api_Platform_Cart
         Mage_Core_Controller_Request_Http $request,
         Mage_Core_Controller_Response_Http $response
     ) {
-        preg_match('/cart\/(.*)\/estimate-shipping-methods/', $request->getRequestUri(), $cartIdMatches);
+        preg_match('/carts\/(.*)\/estimate-shipping-methods/', $request->getRequestUri(), $cartIdMatches);
         $cartId = isset($cartIdMatches[1]) ? $cartIdMatches[1] : null;
         /** @var Mage_Sales_Model_Quote $quote */
         $quote = Mage::getModel('sales/quote');
@@ -106,8 +106,18 @@ class Bold_Checkout_Api_Platform_Cart
             return Bold_Checkout_Rest::buildResponse($response, json_encode([]));
         }
         $payload = json_decode($request->getRawBody());
-        // todo: implement estimate-shipping methods.
-        return Bold_Checkout_Rest::buildResponse($response, json_encode([]));
+        self::updateAddress($quote->getShippingAddress(), $payload->address, $quote);
+        $quote->getShippingAddress()->setCollectShippingRates(true);
+        $quote->setDataChanges(true);
+        $quote->collectTotals();
+        try {
+            return Bold_Checkout_Rest::buildResponse(
+                $response,
+                json_encode(Bold_Checkout_Service_Extractor_Quote_ShippingMethods::extract($quote))
+            );
+        } catch (Mage_Core_Model_Store_Exception $e) {
+            return self::buildErrorResponse($e->getMessage(), $response);
+        }
     }
 
     /**

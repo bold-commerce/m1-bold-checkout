@@ -87,7 +87,7 @@ class Bold_Checkout_Service_PaymentMethod extends Mage_Payment_Model_Method_Abst
         if ($infoInstance && $infoInstance->getCcLast4()) {
             $ccLast4 = $infoInstance->decrypt($infoInstance->getCcLast4());
             $title .= strlen($ccLast4) === 4
-                ? $infoInstance->getCcType() . ': ••••• •••••• ' . $ccLast4
+                ? $infoInstance->getCcType() . ': ending in ' . $ccLast4
                 : $infoInstance->getCcType() . ': ' . $ccLast4;
         }
         return $title ?: parent::getTitle();
