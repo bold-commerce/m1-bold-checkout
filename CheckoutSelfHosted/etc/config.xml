@@ -56,7 +56,6 @@
         <checkout>
             <bold_advanced>
                 <template_type>three_page</template_type>
-                <template_url></template_url>
             </bold_advanced>
         </checkout>
     </default>
