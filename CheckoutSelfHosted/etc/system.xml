@@ -5,14 +5,44 @@
             <groups>
                 <bold_advanced>
                     <fields>
-                        <self_hosted_template_url>
-                            <label>Template Path</label>
-                            <frontend_type>text</frontend_type>
+                        <template_type translate="label">
+                            <label>Self Hosted Checkout Template Type</label>
+                            <frontend_type>select</frontend_type>
                             <sort_order>21</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment><![CDATA[React App URL.]]></comment>
-                        </self_hosted_template_url>
+                            <source_model>bold_checkout_self_hosted/system_config_source_template_type</source_model>
+                            <depends>
+                                <type>3</type>
+                            </depends>
+                        </template_type>
+                        <template_file translate="label">
+                            <label>Self Hosted Checkout Template File</label>
+                            <frontend_type>file</frontend_type>
+                            <backend_model>bold_checkout_self_hosted/system_config_backend_file</backend_model>
+                            <upload_dir config="system/filesystem/media" scope_info="1">bold/checkout/template</upload_dir>
+                            <sort_order>22</sort_order>
+                            <show_in_website>1</show_in_website>
+                            <depends>
+                                <type>3</type>
+                            </depends>
+                            <comment><![CDATA[Three Page template file - three_page.js.<br>One Page template file - one_page.js.
+                                <br>If no one file uploaded, standard will be used as fallback.]]>
+                            </comment>
+                        </template_file>
+                        <template_url translate="label">
+                            <label>Self Hosted Checkout Experience Templates App Url</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>23</sort_order>
+                            <show_in_website>1</show_in_website>
+                            <validate>required-url</validate>
+                            <depends>
+                                <type>3</type>
+                            </depends>
+                            <comment><![CDATA[Example: http://localhost:8080<br>If this field filled up, uploaded and fallback
+                                template file will be ignored.]]>
+                            </comment>
+                        </template_url>
                     </fields>
                 </bold_advanced>
             </groups>

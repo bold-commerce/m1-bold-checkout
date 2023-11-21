@@ -19,7 +19,7 @@ class Bold_CheckoutSelfHosted_Observer_CheckoutObserver extends Bold_Checkout_Ob
         $websiteId = $quote->getStore()->getWebsiteId();
         /** @var Bold_Checkout_Model_Config $selfHostedConfig */
         $selfHostedConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        if (!$selfHostedConfig->isCheckoutTypeSelfHosted($websiteId)) {
+        if (!$selfHostedConfig->isCheckoutTypeSelfHostedReactApp($websiteId)) {
             parent::beforeCheckout($event);
             return;
         }

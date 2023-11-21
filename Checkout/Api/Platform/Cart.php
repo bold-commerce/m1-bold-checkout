@@ -148,6 +148,7 @@ class Bold_Checkout_Api_Platform_Cart
             }
             $quote->setTotalsCollectedFlag(false);
             $quote->setCouponCode($isCodeLengthValid ? $requestBody->couponCode : '')->collectTotals()->save();
+            /** @var Bold_Checkout_Model_Config $config */
             $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
             $validateCouponCodes = $config->getValidateCouponCodes((int)$quote->getStore()->getWebsiteId());
             if ($validateCouponCodes && (!$isCodeLengthValid || $requestBody->couponCode !== $quote->getCouponCode())) {

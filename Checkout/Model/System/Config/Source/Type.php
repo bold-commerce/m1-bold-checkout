@@ -13,12 +13,22 @@ class Bold_Checkout_Model_System_Config_Source_Type
     public function toOptionArray()
     {
         return [
-            Bold_Checkout_Model_Config::VALUE_TYPE_STANDARD =>
-                Mage::helper('core')->__('Standard'),
-            Bold_Checkout_Model_Config::VALUE_TYPE_PARALLEL =>
-                Mage::helper('core')->__('Parallel'),
-            Bold_Checkout_Model_Config::VALUE_TYPE_SELF =>
-                Mage::helper('core')->__('Self-Hosted'),
+            [
+                'value' => Bold_Checkout_Model_Config::VALUE_TYPE_STANDARD,
+                'label' => __('Standard'),
+            ],
+            [
+                'value' => Bold_Checkout_Model_Config::VALUE_TYPE_PARALLEL,
+                'label' => __('Parallel'),
+            ],
+            [
+                'value' => Bold_Checkout_Model_Config::VALUE_TYPE_SELF,
+                'label' => __('Self-Hosted (Magento storefront)'),
+            ],
+            [
+                'value' => Bold_Checkout_Model_Config::VALUE_TYPE_SELF_REACT,
+                'label' => __('Self-Hosted (React application)'),
+            ],
         ];
     }
 }
