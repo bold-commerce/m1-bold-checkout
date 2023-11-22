@@ -8,7 +8,7 @@ if (!$installer->getConnection()->isTableExists($installer->getTable(Bold_Checko
         CREATE TABLE {$installer->getTable(Bold_CheckoutIntegration_Model_Oauth_Consumer::RESOURCE)} (
             entity_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP NULL DEFAULT 0 ON UPDATE CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NULL DEFAULT '0000-00-00 00:00:00',
             name VARCHAR(255) NOT NULL,
             consumer_key VARCHAR(32) NOT NULL,
             secret VARCHAR(128) NOT NULL,
