@@ -5,13 +5,15 @@
  */
 class Bold_CheckoutSelfHosted_Block_Checkout extends Mage_Core_Block_Template
 {
+    const UPLOAD_DIR = 'bold/checkout/template';
+
     /**
      * @var null | stdClass
      */
     private $orderData = null;
 
     /**
-     * Get order data.
+     * Get Bold order data.
      *
      * @return stdClass
      * @throws Exception
@@ -35,37 +37,81 @@ class Bold_CheckoutSelfHosted_Block_Checkout extends Mage_Core_Block_Template
     }
 
     /**
+     * Retrieve public order id from bold checkout data.
+     *
+     * @return string
+     */
+    public function getPublicOrderId()
+    {
+        $session = Mage::getSingleton('checkout/session');
+        return isset($session->getBoldCheckoutData()['data']['public_order_id'])
+            ? $session->getBoldCheckoutData()['data']['public_order_id']
+            : '';
+    }
+
+    /**
+     * Retrieve template script URL.
+     *
+     * @return string
+     */
+    public function getCheckoutTemplateScriptUrl()
+    {
+        $checkoutSession = Mage::getSingleton('checkout/session');
+        $websiteId = (int)$checkoutSession->getQuote()->getStore()->getWebsiteId();
+        /** @var Bold_CheckoutSelfHosted_Model_Config $config */
+        $config = Mage::getSingleton(Bold_CheckoutSelfHosted_Model_Config::RESOURCE);
+        $templateUrl = $config->getCheckoutTemplateUrl($websiteId);
+        $templateType = $config->getCheckoutTemplateType($websiteId);
+        if ($templateUrl) {
+            return rtrim($templateUrl, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $templateType . '.js';
+        }
+        $templateFile = $config->getCheckoutTemplateFile($websiteId);
+        if ($templateFile) {
+            $mediaUrl = $checkoutSession->getQuote()->getStore()->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
+            return $mediaUrl . self::UPLOAD_DIR . DIRECTORY_SEPARATOR . $templateFile;
+        }
+        return $config->getViewFileUrl($websiteId);
+    }
+
+    /**
      * Get shop identifier.
      *
      * @return string
-     * @throws Mage_Core_Exception
      */
     public function getShopIdentifier()
     {
         $websiteId = Mage::app()->getWebsite()->getId();
-        return Mage::getModel(Bold_Checkout_Model_Config::RESOURCE)->getShopIdentifier($websiteId);
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getModel(Bold_Checkout_Model_Config::RESOURCE);
+        return $config->getShopIdentifier($websiteId);
     }
 
     /**
      * Get shop alias.
      *
      * @return string
-     * @throws Exception
      */
     public function getShopAlias()
     {
-        return $this->getOrderData()->data->initial_data->shop_name;
+        try {
+            return $this->getOrderData()->data->initial_data->shop_name;
+        } catch (Exception $e) {
+            return '';
+        }
     }
 
     /**
      * Get custom domain.
      *
      * @return string
-     * @throws Exception
      */
     public function getCustomDomain()
     {
-        return $this->getOrderData()->data->initial_data->shop_name;
+        try {
+            return $this->getOrderData()->data->initial_data->shop_name;
+        } catch (Exception $e) {
+            return '';
+        }
     }
 
     /**
@@ -97,19 +143,6 @@ class Bold_CheckoutSelfHosted_Block_Checkout extends Mage_Core_Block_Template
     public function getLoginUrl()
     {
         return Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB, 'customer/account/login');
-    }
-
-    /**
-     * Get react app url.
-     *
-     * @return string
-     * @throws Mage_Core_Exception
-     */
-    public function getTemplateUrl()
-    {
-        /** @var Bold_CheckoutSelfHosted_Model_Config $selfHostedConfig */
-        $selfHostedConfig = Mage::getSingleton(Bold_CheckoutSelfHosted_Model_Config::RESOURCE);
-        return rtrim($selfHostedConfig->getTemplateUrl(Mage::app()->getWebsite()->getId()), '/') . '/three_page.js';
     }
 
     /**

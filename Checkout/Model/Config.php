@@ -44,6 +44,7 @@ class Bold_Checkout_Model_Config
     const VALUE_TYPE_STANDARD = 0;
     const VALUE_TYPE_PARALLEL = 1;
     const VALUE_TYPE_SELF = 2;
+    const VALUE_TYPE_SELF_REACT = 3;
 
     /**
      * Check if bold functionality enabled.
@@ -160,17 +161,6 @@ class Bold_Checkout_Model_Config
     }
 
     /**
-     * Get configured weight unit.
-     *
-     * @param int $websiteId
-     * @return string
-     */
-    public function getWeightUnit($websiteId)
-    {
-        return Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_WEIGHT_UNIT) ?: 'kg';
-    }
-
-    /**
      * Get Bold API url.
      *
      * @param int $websiteId
@@ -245,6 +235,17 @@ class Bold_Checkout_Model_Config
     public function isCheckoutTypeSelfHosted($websiteId)
     {
         return (int)Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_TYPE) === self::VALUE_TYPE_SELF;
+    }
+
+    /**
+     * Retrieve self-hosted (react app) is enabled config flag.
+     *
+     * @param int $websiteId
+     * @return bool
+     */
+    public function isCheckoutTypeSelfHostedReactApp($websiteId)
+    {
+        return (int)Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_TYPE) === self::VALUE_TYPE_SELF_REACT;
     }
 
     /**

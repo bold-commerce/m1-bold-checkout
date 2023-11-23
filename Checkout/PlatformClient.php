@@ -13,7 +13,6 @@ class Bold_Checkout_PlatformClient
      * @param int $websiteId
      * @param string|null $data
      * @return string
-     * @throws Mage_Core_Exception
      */
     public static function call($method, $url, $websiteId, $data = null)
     {

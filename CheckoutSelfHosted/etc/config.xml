@@ -17,12 +17,9 @@
             <controller_action_predispatch_checkout_onepage_index>
                 <observers>
                     <bold>
-                        <type>disabled</type>
-                    </bold>
-                    <bold_slef_hosted>
                         <class>Bold_CheckoutSelfHosted_Observer_CheckoutObserver</class>
                         <method>beforeCheckout</method>
-                    </bold_slef_hosted>
+                    </bold>
                 </observers>
             </controller_action_predispatch_checkout_onepage_index>
         </events>
@@ -43,4 +40,23 @@
             </bold_checkout_self_hosted>
         </routers>
     </frontend>
+    <adminhtml>
+        <events>
+            <admin_system_config_changed_section_checkout>
+                <observers>
+                    <bold>
+                        <class>Bold_CheckoutSelfHosted_Observer_CreateUrlRewritesObserver</class>
+                        <method>createCheckoutUrlRewrites</method>
+                    </bold>
+                </observers>
+            </admin_system_config_changed_section_checkout>
+        </events>
+    </adminhtml>
+    <default>
+        <checkout>
+            <bold_advanced>
+                <template_type>three_page</template_type>
+            </bold_advanced>
+        </checkout>
+    </default>
 </config>
