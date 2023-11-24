@@ -127,8 +127,6 @@ class Bold_Checkout_Service_Extractor_Order
                 'item_applied_taxes' => $itemAppliedTaxes,
                 'converting_from_quote' => true,
                 'public_id' => $orderExtData->getPublicId(),
-                'financial_status' => $orderExtData->getFinancialStatus(),
-                'fulfillment_status' => $orderExtData->getFulfillmentStatus(),
             ],
         ];
     }

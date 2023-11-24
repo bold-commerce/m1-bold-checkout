@@ -160,8 +160,6 @@ class Bold_Checkout_Service_Order_CreateOrder
         $extOrderData = Mage::getModel(Bold_Checkout_Model_Order::RESOURCE);
         $extOrderData->setOrderId($order->getEntityId());
         $extOrderData->setPublicId($orderData->order->publicId);
-        $extOrderData->setFinancialStatus($orderData->order->financialStatus);
-        $extOrderData->setFulfillmentStatus($orderData->order->fulfillmentStatus);
         Mage::dispatchEvent(
             'bold_checkout_order_ext_data_save_before',
             [
