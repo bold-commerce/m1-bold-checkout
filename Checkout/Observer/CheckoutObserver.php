@@ -126,8 +126,6 @@ class Bold_Checkout_Observer_CheckoutObserver
         $extOrderData = Mage::getModel(Bold_Checkout_Model_Order::RESOURCE);
         $extOrderData->setOrderId($order->getEntityId());
         $extOrderData->setPublicId($boldCheckoutData->data->public_order_id);
-        $extOrderData->setFinancialStatus('pending');
-        $extOrderData->setFulfillmentStatus('pending');
         $extOrderData->save();
         $session->setBoldCheckoutData(null);
     }

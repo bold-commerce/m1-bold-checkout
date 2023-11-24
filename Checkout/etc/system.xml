@@ -73,7 +73,8 @@
                             <comment><![CDATA[
                         Standard - replace the native checkout with Bold Checkout's three-page checkout.<br>
                         Parallel - allow customers to choose between the native checkout or Bold Checkout.<br>
-                        Self-Hosted - use the native checkout with Bold Checkout's payment options.
+                        Self-Hosted (Magento storefront) - use the native checkout with Bold Checkout's payment options.<br>
+                        Self-Hosted (React application) - replace the native checkout with Bold Checkout's React application.
                     ]]></comment>
                         </type>
                         <enabled_for translate="label">

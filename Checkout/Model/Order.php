@@ -60,48 +60,6 @@ class Bold_Checkout_Model_Order extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Set order financial status.
-     *
-     * @param string $financialStatus
-     * @return void
-     */
-    public function setFinancialStatus($financialStatus)
-    {
-        $this->setData(Bold_Checkout_Model_Resource_Order::FINANCIAL_STATUS, $financialStatus);
-    }
-
-    /**
-     * Retrieve financial order status.
-     *
-     * @return string|null
-     */
-    public function getFinancialStatus()
-    {
-        return $this->getData(Bold_Checkout_Model_Resource_Order::FINANCIAL_STATUS);
-    }
-
-    /**
-     * Set order fulfillment status.
-     *
-     * @param string $fulfillmentStatus
-     * @return void
-     */
-    public function setFulfillmentStatus($fulfillmentStatus)
-    {
-        $this->setData(Bold_Checkout_Model_Resource_Order::FULFILLMENT_STATUS, $fulfillmentStatus);
-    }
-
-    /**
-     * Retrieve fulfillment order status.
-     *
-     * @return string|null
-     */
-    public function getFulfillmentStatus()
-    {
-        return $this->getData(Bold_Checkout_Model_Resource_Order::FULFILLMENT_STATUS);
-    }
-
-    /**
      * Set is order using delayed payment capture.
      *
      * @param int $isDelayedCapture
