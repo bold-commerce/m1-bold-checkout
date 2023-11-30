@@ -57,7 +57,7 @@ class Bold_Checkout_Service_Extractor_Quote_Address
             'id' => (int)$address->getId() ?: null,
             'region' => $address->getRegion(),
             'region_id' => (int)$address->getRegionId() ?: null,
-            'region_code' => $address->getRegionCode(),
+            'region_code' => $address->getRegionId() ? $address->getRegionCode(): null,
             'country_id' => $address->getCountryId(),
             'street' => $street,
             'telephone' => $address->getTelephone(),
