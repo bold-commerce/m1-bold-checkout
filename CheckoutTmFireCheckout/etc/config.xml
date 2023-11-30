@@ -6,16 +6,7 @@
         </Bold_CheckoutTmFireCheckout>
     </modules>
     <frontend>
-        <!--  Fire Checkout Index Controller. -->
         <events>
-            <checkout_controller_onepage_save_shipping_method>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingSave</method>
-                    </bold>
-                </observers>
-            </checkout_controller_onepage_save_shipping_method>
             <controller_action_predispatch_firecheckout_index_index>
                 <observers>
                     <bold>
@@ -24,64 +15,6 @@
                     </bold>
                 </observers>
             </controller_action_predispatch_firecheckout_index_index>
-            <controller_action_predispatch_firecheckout_index>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_CheckoutObserver</class>
-                        <method>beforeCheckout</method>
-                    </bold>
-                </observers>
-            </controller_action_predispatch_firecheckout_index>
-            <controller_action_postdispatch_firecheckout_saveBilling>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterBillingSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_firecheckout_saveBilling>
-            <controller_action_postdispatch_firecheckout_saveShipping>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_firecheckout_saveShipping>
-            <controller_action_postdispatch_firecheckout_index_saveShippingMethod>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingMethodSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_firecheckout_index_saveShippingMethod>
-
-            <!--  Fire Checkout One Column Controller. -->
-            <controller_action_postdispatch_firecheckout_onecolumn_savebilling>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterBillingSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_firecheckout_onecolumn_savebilling>
-            <controller_action_postdispatch_firecheckout_onecolumn_saveShipping>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_firecheckout_onecolumn_saveShipping>
-            <controller_action_postdispatch_firecheckout_onecolumnt_saveShippingMethod>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingMethodSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_firecheckout_onecolumnt_saveShippingMethod>
         </events>
     </frontend>
 </config>

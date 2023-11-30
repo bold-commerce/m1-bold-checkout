@@ -35,7 +35,7 @@ class Bold_Checkout_Service_Extractor_Quote_ShippingMethods
             'carrier_code' => $rate->getCarrier(),
             'method_code' => $rate->getMethod(),
             'carrier_title' => $rate->getCarrierTitle(),
-            'method_title' => $rate->getMethodTitle(),
+            'method_title' => strip_tags($rate->getMethodTitle()),
             'amount' => (float)$rate->getPrice(),
             'base_amount' => (float)$rate->getPrice(),
             'available' => true,

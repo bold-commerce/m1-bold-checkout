@@ -233,7 +233,8 @@ class Bold_Checkout_Service_Extractor_Quote_Item
         Mage_Sales_Model_Quote $quote,
         Mage_Sales_Model_Quote_Item $item
     ) {
-        $itemTaxDetails = [];
+        $itemTaxDetails = new stdClass();
+        $itemTaxDetails->taxes = [];
         $itemTaxAmount = $item->getTaxAmount();
         foreach ($quote->getTaxesForItems() as $itemId => $taxDetails) {
             if ((int)$item->getId() !== (int)$itemId) {
@@ -242,21 +243,29 @@ class Bold_Checkout_Service_Extractor_Quote_Item
             $appliedTaxNumber = count($taxDetails);
             $i = 1;
             foreach ($taxDetails as $tax) {
-                $calculatedAmount = Mage::app()->getStore()->roundPrice($item->getPrice() * ($tax['percent'] / 100));
+                $calculatedAmount = (float)$item->getPrice() * ($tax['percent'] / 100);
                 $amount = $i < $appliedTaxNumber && $calculatedAmount < $itemTaxAmount
                     ? $calculatedAmount
                     : $itemTaxAmount;
                 $itemTaxAmount = $itemTaxAmount - $amount;
-                $itemTaxDetails[] = [
-                    'id' => $tax['id'],
-                    'amount' => $amount,
-                    'percent' => $tax['percent'],
-                    'rates' => $tax['rates'],
-                ];
+                $taxData = new stdClass();
+                $taxData->id = $tax['id'];
+                $taxData->amount = $calculatedAmount;
+                $taxData->percent = $tax['percent'];
+                $taxData->rates = $tax['rates'];
+                $itemTaxDetails->taxes[] = $taxData;
                 $i++;
             }
         }
-        return $itemTaxDetails;
+        Mage::dispatchEvent(
+            'bold_checkout_item_tax_extract_after',
+            [
+                'item_tax_details' => $itemTaxDetails,
+                'quote_item' => $item,
+                'quote' => $quote,
+            ]
+        );
+        return array_values($itemTaxDetails->taxes);
     }
 
     /**
