@@ -18,7 +18,10 @@ class Bold_Checkout_Block_Parallel extends Mage_Core_Block_Template
         /** @var Bold_Checkout_Model_Config $boldConfig */
         $boldConfig = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         $quote = Mage::getSingleton('checkout/cart')->getQuote();
-        return Bold_Checkout_Service_IsBoldCheckoutAllowedForQuote::isAllowed($quote)
+        $renderBlock = new Varien_Object(['result' => true]);
+        Mage::dispatchEvent ('bold_checkout_parallel_render_block', ['render' => $renderBlock, 'block' => $this]);
+        return $renderBlock->getResult()
+            && Bold_Checkout_Service_IsBoldCheckoutAllowedForQuote::isAllowed($quote)
             && $boldConfig->isCheckoutTypeParallel($websiteId);
     }
 
