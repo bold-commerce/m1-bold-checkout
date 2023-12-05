@@ -19,7 +19,7 @@ class Bold_Checkout_Model_System_Config_Source_Type
             ],
             [
                 'value' => Bold_Checkout_Model_Config::VALUE_TYPE_PARALLEL,
-                'label' => __('Parallel'),
+                'label' => __('Dual'),
             ],
             [
                 'value' => Bold_Checkout_Model_Config::VALUE_TYPE_SELF,
@@ -27,7 +27,7 @@ class Bold_Checkout_Model_System_Config_Source_Type
             ],
             [
                 'value' => Bold_Checkout_Model_Config::VALUE_TYPE_SELF_REACT,
-                'label' => __('Self-Hosted (React application)'),
+                'label' => __('Self-Hosted (Bold Templates)'),
             ],
         ];
     }

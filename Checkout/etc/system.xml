@@ -4,7 +4,7 @@
         <checkout>
             <groups>
                 <bold translate="label">
-                    <label>Bold Checkout Integration</label>
+                    <label>Bold Checkout Extension</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>1000</sort_order>
                     <show_in_default>1</show_in_default>
@@ -22,7 +22,9 @@
                             <sort_order>10</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment><![CDATA[Refer to the <a target='_blank' href="https://developer.boldcommerce.com/default/guides/platform-integration/magento-1">documentation</a> for more details.]]></comment>
+                            <comment><![CDATA[
+                                Refer to the <a target='_blank' href="https://support.boldcommerce.com/hc/en-us/articles/16254826518164-Installation-Guide-for-Bold-Checkout">documentation</a> for more details.
+                            ]]></comment>
                         </enabled>
                         <api_token>
                             <label>API Token</label>
@@ -32,13 +34,13 @@
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>required-entry</frontend_class>
-                            <comment>API token used to communicate with the Bold Checkout APIs. Obtain in the Bold Account Center.
+                            <comment><![CDATA[ API token used to communicate with the Bold Checkout APIs. Obtain in the <a target='_blank' href="https://apps.boldapps.net/accounts/welcome">Bold Account Center</a>. ]]>
                             </comment>
                         </api_token>
                     </fields>
                 </bold>
                 <bold_checkout_life_elements translate="label">
-                    <label>Bold Checkout Integration (LiFE) Elements</label>
+                    <label>Bold Checkout Extension (LiFE) Elements</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>1001</sort_order>
                     <show_in_default>0</show_in_default>
@@ -56,7 +58,7 @@
                     </fields>
                 </bold_checkout_life_elements>
                 <bold_advanced translate="label">
-                    <label>Bold Checkout Integration Advanced Settings</label>
+                    <label>Bold Checkout Extension Advanced Settings</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>1002</sort_order>
                     <show_in_default>0</show_in_default>
@@ -71,10 +73,10 @@
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <comment><![CDATA[
-                        Standard - replace the native checkout with Bold Checkout's three-page checkout.<br>
-                        Parallel - allow customers to choose between the native checkout or Bold Checkout.<br>
-                        Self-Hosted (Magento storefront) - use the native checkout with Bold Checkout's payment options.<br>
-                        Self-Hosted (React application) - replace the native checkout with Bold Checkout's React application.
+                        Standard — replace the native checkout with Bold Checkout's three-page checkout.<br>
+                        Dual —  allow customers to choose between the native checkout or Bold Checkout.<br>
+                        Self-Hosted (Magento storefront) — use the native checkout with Bold Checkout's payment options.<br>
+                        Self-Hosted (Bold Templates) — replace the native checkout with Bold Checkout's <a target='_blank' href="https://github.com/bold-commerce/checkout-experience-templates">Open Source Checkout Templates</a>.
                     ]]></comment>
                         </type>
                         <enabled_for translate="label">
@@ -84,7 +86,7 @@
                             <sort_order>30</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Configure Bold Checkout access limitations. Select 'All' to remove all limitations.</comment>
+                            <comment><![CDATA[ Configure Bold Checkout access limitations. Select 'All' to remove all limitations. ]]></comment>
                         </enabled_for>
                         <ip_whitelist translate="label">
                             <label>IP List</label>
@@ -95,8 +97,7 @@
                             <sort_order>40</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Only customers with listed IPs will be able to navigate to Bold Checkout.
-                                Please add whitelisted IPs separated by comma.</comment>
+                            <comment><![CDATA[ Please add IP addresses, separated by a comma, to enable those IPs to access Bold Checkout. ]]></comment>
                         </ip_whitelist>
                         <customer_whitelist translate="label">
                             <label>Customer List</label>
@@ -107,8 +108,7 @@
                             <sort_order>50</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Only customers with listed emails will be able to navigate to Bold Checkout.
-                                Please add whitelisted Customer emails separated by comma.</comment>
+                            <comment><![CDATA[ Please add email addresses, separated by a comma, to enable customers with listed emails to access Bold Checkout. ]]></comment>
                         </customer_whitelist>
                         <orders_percentage translate="label">
                             <label>Orders Percentage</label>
@@ -120,8 +120,8 @@
                             <sort_order>60</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Percentage of carts will be redirected to Bold Checkout.
-                                Please select the percentage of Orders to be placed using Bold Checkout.</comment>
+                            <comment><![CDATA[ Percentage of carts will be redirected to Bold Checkout.
+                                Please select the percentage of Orders to be placed using Bold Checkout. ]]></comment>
                         </orders_percentage>
                         <exclude_for translate="label">
                             <label>Exclude Customer Groups</label>
@@ -130,7 +130,7 @@
                             <sort_order>35</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Configure Bold Checkout access limitations. Select 'None' to remove all limitations.</comment>
+                            <comment><![CDATA[ Configure Bold Checkout access limitations. Select 'None' to remove all limitations. ]]></comment>
                         </exclude_for>
                         <exclude_customer_groups_list translate="label">
                             <label>Excluded Customer Group List</label>
@@ -142,16 +142,16 @@
                             <sort_order>36</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Customers who belong to specified customer groups will not be able to navigate to Bold Checkout.</comment>
+                            <comment><![CDATA[ Customers who belong to specified customer groups will not be able to navigate to Bold Checkout. ]]></comment>
                         </exclude_customer_groups_list>
                         <url translate="label">
-                            <label>API Url</label>
+                            <label>API URL</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>80</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>validate-url</frontend_class>
-                            <comment>Bold Checkout API URL. Do not change.</comment>
+                            <comment><![CDATA[ Bold Checkout API URL. Do not change. ]]></comment>
                         </url>
                         <checkout_url translate="label">
                             <label>Checkout Url</label>
@@ -191,7 +191,7 @@
                             <sort_order>100</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Weight unit. Used to properly synchronize products with Bold Checkout.</comment>
+                            <comment><![CDATA[ Weight unit. Used to properly synchronize products with Bold Checkout. ]]></comment>
                         </weight_unit>
                         <weight_conversion_rate>
                             <label>Weight Unit Conversion Rate To Grams</label>
@@ -199,8 +199,7 @@
                             <sort_order>110</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment>Conversion rate to get product weight in grams. Change accordingly with the "Weight Unit" configuration.
-                                Used to properly synchronize products with Bold Checkout.</comment>
+                            <comment><![CDATA[ The conversion rate between your Weight Unit and grams. ]]></comment>
                         </weight_conversion_rate>
                         <validate_coupon_codes translate="label">
                             <label>Validate Coupon Codes</label>
@@ -209,7 +208,7 @@
                             <sort_order>120</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment><![CDATA[Throw validation error for invalid coupon codes.]]></comment>
+                            <comment><![CDATA[ Throw validation error for invalid coupon codes. ]]></comment>
                         </validate_coupon_codes>
                         <log translate="label">
                             <label>Enable Bold Checkout Requests Log</label>
@@ -218,7 +217,7 @@
                             <sort_order>130</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <comment><![CDATA[Log Bold Checkout requests for debugging purpose.]]></comment>
+                            <comment><![CDATA[ Log Bold Checkout requests in var/log/bold_checkout.log for debugging purposes. ]]></comment>
                         </log>
                     </fields>
                 </bold_advanced>
