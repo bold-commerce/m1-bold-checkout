@@ -1,67 +1,25 @@
 <?php
 /**
- * Bold Payments iframe.
+ * Bold Payments PIGI iframe template.
  *
  * @var Bold_Checkout_Block_Form_Payments $this
  */
 ?>
 <?php
-if (!$this->getIframeUrl()) {
-    echo 'Bold Payments are not available.';
-    return;
-}
-?>
+if (!$this->getIframeUrl()) : ?>
+    <script>
+        const boldPaymentsCheckbox = document.getElementById('p_method_bold');
+        boldPaymentsCheckbox.hidden = true;
+    </script>
+<?php endif; ?>
 <div id="bold-payments-container">
     <iframe id='PIGI' src="<?php echo $this->escapeUrl($this->getIframeUrl()) ?>"
             width='100%' scrolling='no' frameborder='0' style='height: 275px;'></iframe>
 </div>
 <script>
-    const continueButton = document.querySelector('#payment-buttons-container .button');
-    continueButton.removeAttribute('onclick');
-    continueButton.addEventListener('click', function (event) {
-        if (checkout.loadWaiting) {
-            return;
-        }
-        const boldPaymentsCheckbox = document.getElementById('p_method_bold');
-        if (!boldPaymentsCheckbox.checked) {
-            payment.save();
-        }
-        checkout.setLoadWaiting('payment');
-        const iframeElement = document.querySelector('iframe#PIGI');
-        const iframeWindow = iframeElement.contentWindow;
-        const clearAction = {actionType: 'PIGI_CLEAR_ERROR_MESSAGES'};
-        const action = {actionType: 'PIGI_ADD_PAYMENT'};
-        iframeWindow.postMessage(clearAction, '*');
-        iframeWindow.postMessage(action, '*');
-    });
-
-    const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
-    paymentMethodsRadioButtons.forEach(function(radioButton) {
-        radioButton.addEventListener('change', function() {
-            const myRadioButton = document.getElementById('p_method_bold');
-            const paymentIframe = document.getElementById('PIGI');
-            myRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
-        });
-    });
-    document.getElementById('p_method_bold').checked = true;
-    window.addEventListener('message', ({data}) => {
-        updateIframeHeight(data);
-        const type = data.responseType;
-        if (type) {
-            switch (type) {
-                case 'PIGI_INITIALIZED':
-                    break;
-                case 'PIGI_REFRESH_ORDER':
-                    break;
-                case 'PIGI_ADD_PAYMENT':
-                    checkout.setLoadWaiting(false);
-                    if (!data.payload.success) {
-                        return;
-                    }
-                    payment.save();
-            }
-        }
-    });
+    updateContinueButton();
+    updateBoldPaymentCheckbox();
+    subscribeToPIGIEvents();
 
     /**
      * Update payment iframe height.
@@ -76,5 +34,70 @@ if (!$this->getIframeUrl()) {
             return;
         }
         iframeElement.style.height = data.height.round() + 'px';
+    }
+
+    /**
+     * Subscribe to continue button click event.
+     */
+    function updateContinueButton() {
+        const continueButton = document.querySelector('#payment-buttons-container .button');
+        continueButton.removeAttribute('onclick');
+        continueButton.addEventListener('click', function () {
+            if (checkout.loadWaiting) {
+                return;
+            }
+            const boldPaymentsCheckbox = document.getElementById('p_method_bold');
+            if (!boldPaymentsCheckbox.checked) {
+                payment.save();
+            }
+            checkout.setLoadWaiting('payment');
+            const iframeElement = document.querySelector('iframe#PIGI');
+            const iframeWindow = iframeElement.contentWindow;
+            const clearAction = {actionType: 'PIGI_CLEAR_ERROR_MESSAGES'};
+            const action = {actionType: 'PIGI_ADD_PAYMENT'};
+            iframeWindow.postMessage(clearAction, '*');
+            iframeWindow.postMessage(action, '*');
+        });
+    }
+
+    /**
+     * Subscribe to bold payment checkbox change event.
+     */
+    function updateBoldPaymentCheckbox() {
+        const boldRadioButton = document.getElementById('p_method_bold');
+        const paymentIframe = document.getElementById('PIGI');
+        const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
+        boldRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
+        paymentMethodsRadioButtons.forEach(function (radioButton) {
+            radioButton.addEventListener('change', function () {
+                const boldRadioButton = document.getElementById('p_method_bold');
+                const paymentIframe = document.getElementById('PIGI');
+                boldRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
+            });
+        });
+    }
+
+    /**
+     * Subscribe to PIGI iframe events.
+     */
+    function subscribeToPIGIEvents() {
+        window.addEventListener('message', ({data}) => {
+            updateIframeHeight(data);
+            const type = data.responseType;
+            if (type) {
+                switch (type) {
+                    case 'PIGI_INITIALIZED':
+                        break;
+                    case 'PIGI_REFRESH_ORDER':
+                        break;
+                    case 'PIGI_ADD_PAYMENT':
+                        checkout.setLoadWaiting(false);
+                        if (!data.payload.success) {
+                            return;
+                        }
+                        payment.save();
+                }
+            }
+        });
     }
 </script>
