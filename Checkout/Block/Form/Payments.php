@@ -56,7 +56,6 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
      * Get allowed countries.
      *
      * @return string
-     * @throws Mage_Core_Exception
      */
     public function getAllowedCountries()
     {
@@ -168,14 +167,18 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
         if (!$boldCheckoutData) {
             return;
         }
-        if ($this->customerIsGuest() && !$boldCheckoutData->data->application_state->customer->email_address) {
+        $boldEmailAddress = $boldCheckoutData->data->application_state->customer->email_address;
+        $email = $session->getQuote()->getBillingAddress()->getEmail();
+        $firstname = $session->getQuote()->getBillingAddress()->getFirstname();
+        $lastname = $session->getQuote()->getBillingAddress()->getLastname();
+        if ($this->customerIsGuest() && !$boldEmailAddress && $email && $firstname && $lastname) {
             $guestResult = Bold_Checkout_StorefrontClient::call(
                 'POST',
                 'customer/guest',
                 [
-                    'email_address' => $session->getQuote()->getBillingAddress()->getEmail(),
-                    'first_name' => $session->getQuote()->getBillingAddress()->getFirstname(),
-                    'last_name' => $session->getQuote()->getBillingAddress()->getLastname(),
+                    'email_address' => $email,
+                    'first_name' => $firstname,
+                    'last_name' => $lastname,
                 ]
             );
             if (isset($guestResult->errors)) {

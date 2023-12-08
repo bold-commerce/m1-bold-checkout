@@ -1,6 +1,6 @@
 <?php
 /**
- * Bold Payments iframe.
+ * Bold Payments iframe template.
  *
  * @var Bold_Checkout_Block_Form_Payments $this
  */
@@ -10,6 +10,9 @@
 </div>
 
 <script>
+    /**
+     * Bold Checkout Storefront Client.
+     */
     BoldClient = Class.create({
         requestInProgress: false,
         requestQueue: [],
@@ -60,7 +63,7 @@
                     newPayload = this.address.getBillingAddress();
                     break;
                 case 'customer' :
-                    path = window.bold[nextRequest.dataType] ? 'customer' : 'customer/guest';
+                    path = 'customer/guest';
                     newPayload = this.customer.getCustomer();
                     break;
             }
@@ -78,10 +81,7 @@
                         'Authorization': 'Bearer ' + this.jwtToken,
                         'Content-Type': 'application/json',
                     },
-                    parameters: Object.toJSON({
-                        _method: window.bold[nextRequest.dataType] ? 'PUT' : 'POST',
-                        ...newPayload
-                    }),
+                    parameters: Object.toJSON(newPayload),
                     onSuccess: function (transport) {
                         const response = transport.responseText.evalJSON(true);
                         window.bold[nextRequest.dataType] = response.data[nextRequest.dataType];
@@ -97,7 +97,7 @@
         },
 
         /**
-         * Compare new payload with saved payload.
+         * Compare new payload with saved payload to avoid duplicated requests.
          *
          * @param newPayload
          * @param dataType
@@ -106,7 +106,7 @@
          */
         payloadCompare: function (newPayload, dataType) {
             const savedPayload = window.bold[dataType] || {};
-            for (var key in newPayload) {
+            for (let key in newPayload) {
                 if (newPayload.hasOwnProperty(key) && key !== 'id' && savedPayload[key] !== newPayload[key]) {
                     return false;
                 }
@@ -114,6 +114,10 @@
             return true;
         },
     });
+
+    /**
+     * Bold Billing Address class.
+     */
     BoldAddress = Class.create({
         allowedCountries: <?php echo $this->getAllowedCountries(); ?>,
         savedBillingAddress: <?php echo $this->getSavedAddresses(); ?>,
@@ -203,6 +207,10 @@
             })
         }
     });
+
+    /**
+     * Bold Customer class.
+     */
     BoldCustomer = Class.create({
         customerFields: {
             'email_address': 'billing:email',
@@ -250,6 +258,10 @@
             })
         }
     });
+
+    /**
+     * PIGI iframe payment class.
+     */
     BoldPayment = Class.create({
         paymentType: null,
 
@@ -323,15 +335,19 @@
                 return;
             }
             boldPaymentsCheckbox.checked = false;
-            boldPaymentsCheckbox.observe('change', function () {
-                    if (this.checked) {
-                        const iframeElement = $('PIGI');
-                        iframeElement.src = iframeUrl;
-                        const iframeWindow = iframeElement.contentWindow;
+            const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
+            paymentMethodsRadioButtons.forEach(function (radioButton) {
+                radioButton.addEventListener('change', function () {
+                    const boldRadioButton = document.getElementById('p_method_bold');
+                    const paymentIframe = document.getElementById('PIGI');
+                    boldRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
+                    if (boldRadioButton.checked) {
+                        paymentIframe.src = iframeUrl;
+                        const iframeWindow = paymentIframe.contentWindow;
                         iframeWindow.postMessage({actionType: 'PIGI_REFRESH_ORDER'}, '*');
                     }
-                }
-            );
+                });
+            });
         },
 
         /**

@@ -57,6 +57,8 @@ class Bold_Checkout_Api_Platform_Cart
             return self::getErrorResult($cartId, $response);
         }
         $payload = json_decode($request->getRawBody());
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         try {
             self::prepareStore($quote);
             if ($payload->billing_address === null) {
@@ -64,7 +66,9 @@ class Bold_Checkout_Api_Platform_Cart
                 $quote->removeAddress($quote->getShippingAddress()->getId());
                 $quote->setDataChanges(true);
                 $quote->collectTotals();
-                $quote->save();
+                if (!$config->isCheckoutTypeSelfHosted((int)$quote->getStore()->getWebsiteId())) {
+                    $quote->save();
+                }
                 $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
                 return Bold_Checkout_Rest::buildResponse($response, json_encode($quoteData));
             }
@@ -75,7 +79,9 @@ class Bold_Checkout_Api_Platform_Cart
             }
             $quote->setDataChanges(true);
             $quote->collectTotals();
-            $quote->save();
+            if (!$config->isCheckoutTypeSelfHosted((int)$quote->getStore()->getWebsiteId())) {
+                $quote->save();
+            }
             $quoteData = Bold_Checkout_Service_Extractor_Quote::extract($quote);
         } catch (Mage_Core_Model_Store_Exception $e) {
             return self::buildErrorResponse($e->getMessage(), $response);
