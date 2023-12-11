@@ -44,11 +44,6 @@
                     </regioncodemapper>
                 </entities>
             </bold_checkout_resource>
-            <importexport>
-                <rewrite>
-                    <import_entity_customer>Bold_Checkout_Model_Import_Entity_Customer</import_entity_customer>
-                </rewrite>
-            </importexport>
         </models>
         <resources>
             <bold_checkout_setup>
@@ -58,22 +53,6 @@
             </bold_checkout_setup>
         </resources>
         <events>
-            <customer_save_commit_after>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_CustomerObserver</class>
-                        <method>customerSaved</method>
-                    </bold>
-                </observers>
-            </customer_save_commit_after>
-            <customer_delete_commit_after>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_CustomerObserver</class>
-                        <method>customerDeleted</method>
-                    </bold>
-                </observers>
-            </customer_delete_commit_after>
             <sales_order_save_commit_after>
                 <observers>
                     <bold>
@@ -134,22 +113,6 @@
                     </bold>
                 </observers>
             </checkout_submit_all_after>
-            <customer_address_save_commit_after>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_CustomerObserver</class>
-                        <method>customerAddressSaved</method>
-                    </bold>
-                </observers>
-            </customer_address_save_commit_after>
-            <customer_address_delete_commit_after>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_CustomerObserver</class>
-                        <method>customerAddressDeleted</method>
-                    </bold>
-                </observers>
-            </customer_address_delete_commit_after>
         </events>
         <layout>
             <updates>
