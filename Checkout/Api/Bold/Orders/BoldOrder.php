@@ -19,6 +19,7 @@ class Bold_Checkout_Api_Bold_Orders_BoldOrder
     {
         $body = [
             'flow_id' => $flowId,
+            'api_session_id' => (string)$quote->getId(),
             'cart_items' => Bold_Checkout_Service_Extractor_Quote_Item::extractLineItems($quote),
             'actions' => Bold_Checkout_Service_QuoteActionManager::generateActionsData($quote),
             'order_meta_data' => [
