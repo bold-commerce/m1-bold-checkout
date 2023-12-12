@@ -80,7 +80,6 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
      * Get storefront Bold client url.
      *
      * @return string|null
-     * @throws Mage_Core_Exception
      */
     public function getStoreFrontClientUrl()
     {
@@ -122,13 +121,8 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
             return null;
         }
         $websiteId = Mage::app()->getWebsite()->getId();
-        try {
-            $this->refreshOrder();
-        } catch (Mage_Core_Exception $e) {
-            return null;
-        }
         $shopId = Bold_Checkout_Service_ShopIdentifier::getShopIdentifier($websiteId);
-        $styles = $this->getStyles();
+        $styles = $this->getIframeStyles();
         if ($styles) {
             Bold_Checkout_StorefrontClient::call('POST', 'payments/styles', $styles);
         }
@@ -145,55 +139,12 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
      *
      * @return array|null
      */
-    private function getStyles()
+    private function getIframeStyles()
     {
         $styles = Mage::getModuleDir('data', 'Bold_Checkout') . DS . 'form/payments/styles.json';
         if (file_exists($styles)) {
             return json_decode(file_get_contents($styles), true);
         }
         return null;
-    }
-
-    /**
-     * Refresh order on Bold side before render PIGI iframe.
-     *
-     * @return void
-     * @throws Mage_Core_Exception
-     */
-    private function refreshOrder()
-    {
-        $session = Mage::getSingleton('checkout/session');
-        $boldCheckoutData = $session->getBoldCheckoutData();
-        if (!$boldCheckoutData) {
-            return;
-        }
-        $boldEmailAddress = $boldCheckoutData->data->application_state->customer->email_address;
-        $email = $session->getQuote()->getBillingAddress()->getEmail();
-        $firstname = $session->getQuote()->getBillingAddress()->getFirstname();
-        $lastname = $session->getQuote()->getBillingAddress()->getLastname();
-        if ($this->customerIsGuest() && !$boldEmailAddress && $email && $firstname && $lastname) {
-            $guestResult = Bold_Checkout_StorefrontClient::call(
-                'POST',
-                'customer/guest',
-                [
-                    'email_address' => $email,
-                    'first_name' => $firstname,
-                    'last_name' => $lastname,
-                ]
-            );
-            if (isset($guestResult->errors)) {
-                Mage::throwException($guestResult->errors[0]->message);
-            }
-        }
-
-        if (!$boldCheckoutData->data->application_state->addresses->billing) {
-            $refreshResult = Bold_Checkout_StorefrontClient::call(
-                'GET',
-                'refresh'
-            );
-            if (isset($refreshResult->errors)) {
-                Mage::throwException($refreshResult->errors[0]->message);
-            }
-        }
     }
 }

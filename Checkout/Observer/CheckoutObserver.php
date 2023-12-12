@@ -91,10 +91,8 @@ class Bold_Checkout_Observer_CheckoutObserver
         if (!$boldCheckoutData || $paymentMethod !== Bold_Checkout_Service_PaymentMethod::CODE) {
             return;
         }
-        $refreshResult = Bold_Checkout_StorefrontClient::call('GET', 'refresh');
-        $taxesResul = Bold_Checkout_StorefrontClient::call('POST', 'taxes');
         $processOrderResult = Bold_Checkout_StorefrontClient::call('POST', 'process_order');
-        if (isset($refreshResult->errors) || isset($taxesResul->errors) || isset($processOrderResult->errors)) {
+        if (isset($processOrderResult->errors)) {
             $this->throwException();
         }
     }
