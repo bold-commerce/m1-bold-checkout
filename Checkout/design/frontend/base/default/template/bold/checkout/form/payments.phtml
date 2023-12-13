@@ -179,6 +179,7 @@
                             if (!checkout.loadWaiting) {
                                 checkout.setLoadWaiting('payment');
                             }
+                            const errorMessage = "<?php echo $this->__('An error occurred while processing your payment. Please try again.') ?>";
                             // Refresh Bold order to get the latest cart data before processing the order.
                             this.request('refresh', 'GET').then(function () {
                                 // Need to make this request to Bold Storefront API to
@@ -188,11 +189,11 @@
                                     payment.save();
                                 }).catch(function () {
                                     checkout.setLoadWaiting(false);
-                                    this.displayErrorMessage('An error occurred while processing your payment. Please try again.');
+                                    this.displayErrorMessage(errorMessage);
                                 }.bind(this));
                             }.bind(this)).catch(function () {
                                 checkout.setLoadWaiting(false);
-                                this.displayErrorMessage('An error occurred while processing your payment. Please try again.');
+                                this.displayErrorMessage(errorMessage);
                             }.bind(this));
                     }
                 }

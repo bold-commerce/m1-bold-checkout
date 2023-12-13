@@ -74,8 +74,7 @@ class Bold_Checkout_Observer_CheckoutObserver
     /**
      * Place order on Bold side before Magento order is placed.
      *
-     * Before Magento order is placed Bold order should be refreshed to get the latest Magento cart data,
-     * taxes should be updated and Bold order processed on Bold side.
+     * Before Magento order is placed Bold order should be processed.
      *
      * @param Varien_Event_Observer $event
      * @return void
