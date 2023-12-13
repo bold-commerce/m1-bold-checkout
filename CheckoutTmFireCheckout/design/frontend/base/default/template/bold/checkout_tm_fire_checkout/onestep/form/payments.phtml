@@ -489,7 +489,7 @@
             if (payment.currentMethod && payment.currentMethod !== 'bold') {
                 return;
             }
-            if (!this.paymentType) {
+            if (!this.paymentType) { // will be set after PIGI_ADD_PAYMENT event @see processPIGIAddPaymentResponse
                 checkout.setLoadWaiting(true);
                 const iframeElement = $('PIGI');
                 const iframeWindow = iframeElement.contentWindow;
