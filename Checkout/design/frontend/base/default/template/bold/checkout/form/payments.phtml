@@ -20,8 +20,6 @@
      * Bold Checkout Payment Service.
      */
     BoldPayment = Class.create({
-        requestInProgress: false,
-        requestQueue: [],
         jwtToken: "<?php echo $this->getJwtToken(); ?>",
         url: "<?php echo $this->getStoreFrontClientUrl(); ?>",
         iframeUrl: "<?php echo $this->escapeUrl($this->getIframeUrl()); ?>",
