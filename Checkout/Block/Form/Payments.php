@@ -5,7 +5,7 @@
  */
 class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
 {
-    const URL = 'https://api.boldcommerce.com/checkout/storefront/';
+    const PATH = '/checkout/storefront/';
 
     /**
      * @var array
@@ -56,7 +56,6 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
      * Get allowed countries.
      *
      * @return string
-     * @throws Mage_Core_Exception
      */
     public function getAllowedCountries()
     {
@@ -81,7 +80,6 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
      * Get storefront Bold client url.
      *
      * @return string|null
-     * @throws Mage_Core_Exception
      */
     public function getStoreFrontClientUrl()
     {
@@ -124,13 +122,16 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
         }
         $websiteId = Mage::app()->getWebsite()->getId();
         $shopId = Bold_Checkout_Service_ShopIdentifier::getShopIdentifier($websiteId);
-        $styles = $this->getStyles();
+        $styles = $this->getIframeStyles();
         if ($styles) {
             Bold_Checkout_StorefrontClient::call('POST', 'payments/styles', $styles);
         }
         $orderId = $boldCheckoutData->data->public_order_id;
         $jwtToken = $boldCheckoutData->data->jwt_token;
-        return self::URL . $shopId . '/' . $orderId . '/payments/iframe?token=' . $jwtToken;
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getModel(Bold_Checkout_Model_Config::RESOURCE);
+        $apiUrl = $config->getApiUrl($websiteId);
+        return $apiUrl . self::PATH . $shopId . '/' . $orderId . '/payments/iframe?token=' . $jwtToken;
     }
 
     /**
@@ -138,15 +139,12 @@ class Bold_Checkout_Block_Form_Payments extends Mage_Payment_Block_Form
      *
      * @return array|null
      */
-    private function getStyles()
+    private function getIframeStyles()
     {
         $styles = Mage::getModuleDir('data', 'Bold_Checkout') . DS . 'form/payments/styles.json';
-        // @phpcs:disable MEQP1.Security.DiscouragedFunction.Found
         if (file_exists($styles)) {
             return json_decode(file_get_contents($styles), true);
         }
-        // @phpcs:enable MEQP1.Security.DiscouragedFunction.Found
-
         return null;
     }
 }

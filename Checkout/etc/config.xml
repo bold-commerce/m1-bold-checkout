@@ -33,12 +33,6 @@
                     <order>
                         <table>bold_checkout_order</table>
                     </order>
-                    <synchronization>
-                        <table>bold_checkout_synchronization_entity</table>
-                    </synchronization>
-                    <status>
-                        <table>bold_checkout_synchronization_status</table>
-                    </status>
                     <regioncodemapper>
                         <table>bold_checkout_region_iso_code</table>
                     </regioncodemapper>
@@ -73,30 +67,6 @@
                     </bold>
                 </observers>
             </controller_action_predispatch_checkout_onepage_index>
-            <controller_action_postdispatch_checkout_onepage_saveBilling>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterBillingSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_checkout_onepage_saveBilling>
-            <controller_action_postdispatch_checkout_onepage_saveShipping>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_checkout_onepage_saveShipping>
-            <controller_action_postdispatch_checkout_onepage_saveShippingMethod>
-                <observers>
-                    <bold>
-                        <class>Bold_Checkout_Observer_OnepageControllerObserver</class>
-                        <method>afterShippingMethodSave</method>
-                    </bold>
-                </observers>
-            </controller_action_postdispatch_checkout_onepage_saveShippingMethod>
             <checkout_type_onepage_save_order>
                 <observers>
                     <bold>

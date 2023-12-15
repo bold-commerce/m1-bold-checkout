@@ -35,8 +35,6 @@ class Bold_Checkout_Api_Platform_Customers
         Mage_Core_Controller_Request_Http $request,
         Mage_Core_Controller_Response_Http $response
     ) {
-        /** @var Bold_Checkout_Model_Config $config */
-        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         $requestBody = json_decode($request->getRawBody());
         if (!isset($requestBody->customer)) {
             return Bold_Checkout_Rest::buildErrorResponse(
@@ -52,13 +50,6 @@ class Bold_Checkout_Api_Platform_Customers
                 'Please specify website id in request.',
                 400,
                 'server.validation_error'
-            );
-        }
-        if ($config->isCheckoutTypeSelfHosted($requestBody->customer->website_id)) {
-            return Bold_Checkout_Rest::buildResponse(
-                $response,
-                null,
-                201
             );
         }
         $customerData = $requestBody->customer;

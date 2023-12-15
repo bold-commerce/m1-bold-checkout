@@ -72,7 +72,9 @@ class Bold_Checkout_Observer_CheckoutObserver
     }
 
     /**
-     * Place order on Bold side.
+     * Place order on Bold side before Magento order is placed.
+     *
+     * Before Magento order is placed Bold order should be processed.
      *
      * @param Varien_Event_Observer $event
      * @return void
@@ -88,28 +90,16 @@ class Bold_Checkout_Observer_CheckoutObserver
         if (!$boldCheckoutData || $paymentMethod !== Bold_Checkout_Service_PaymentMethod::CODE) {
             return;
         }
-        $taxes = Bold_Checkout_StorefrontClient::call('POST', 'taxes');
-        if (isset($taxes->errors)) {
-            $this->throwException();
-        }
-        if ($order->getDiscountAmount()) {
-            $discounts = Bold_Checkout_StorefrontClient::call(
-                'POST',
-                'discounts',
-                ['code' => 'Discount']
-            );
-            if ($discounts->errors) {
-                $this->throwException();
-            }
-        }
-        $processOrder = Bold_Checkout_StorefrontClient::call('POST', 'process_order');
-        if (isset($processOrder->errors)) {
+        $processOrderResult = Bold_Checkout_StorefrontClient::call('POST', 'process_order');
+        if (isset($processOrderResult->errors)) {
             $this->throwException();
         }
     }
 
     /**
-     * Save bold order data to database.
+     * Save Bold order data to database after order has been placed on Magento side.
+     *
+     * After Magento order has been placed, we have order id and can save Bold order data(public id) to database.
      *
      * @param Varien_Event_Observer $event
      * @return void

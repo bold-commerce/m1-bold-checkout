@@ -1,6 +1,6 @@
 <?php
 /**
- * Bold Payments iframe.
+ * Bold Payments iframe template for firecheckout onestep checkout.
  *
  * @var Bold_Checkout_Block_Form_Payments $this
  */
@@ -10,6 +10,11 @@
 </div>
 
 <script>
+    /**
+     * Bold Checkout Storefront Client.
+     *
+     * Performs requests to Bold Storefront API to sync data during checkout.
+     */
     BoldClient = Class.create({
         requestInProgress: false,
         requestQueue: [],
@@ -26,70 +31,86 @@
         },
 
         /**
-         * Send billing and customer sync requests.
+         * Sync data with Bold Storefront API.
          *
-         * @param dataType string
-         * @returns {void}
+         * @param dataType string - The data type to sync. Possible values: 'address', 'customer', 'refresh', 'taxes'.
+         * @return {Promise}
          * @public
          */
-        post: function (dataType) {
-            const request = {
-                'dataType': dataType,
-            };
-            this.requestQueue.push(request);
-            this.processNextRequest();
+        request: function (dataType) {
+            return new Promise((resolve, reject) => {
+                const request = {
+                    'dataType': dataType,
+                };
+                this.requestQueue.push(request);
+                this.processNextRequest(resolve, reject);
+            });
         },
 
         /**
-         * Process next request in queue.
+         * Process next request in requests queue.
          *
+         * As Bold Storefront API allows only one request at a time, we need to process requests one by one.
+         *
+         * @param {Function} resolve - The function to call on success.
+         * @param {Function} reject - The function to call on failure.
          * @returns {void}
          * @private
          */
-        processNextRequest: function () {
+        processNextRequest: function (resolve, reject) {
             if (this.requestInProgress || this.requestQueue.length === 0) {
                 return;
             }
             this.requestInProgress = true;
             const nextRequest = this.requestQueue.shift();
-            let newPayload;
+            let newPayload = {};
             let path;
+            let method;
             switch (nextRequest.dataType) {
-                case 'address' :
+                case 'address':
+                    method = 'POST';
                     path = 'addresses/billing';
                     newPayload = this.address.getBillingAddress();
                     break;
-                case 'customer' :
-                    path = window.bold[nextRequest.dataType] ? 'customer' : 'customer/guest';
+                case 'customer':
+                    method = 'POST';
+                    path = 'customer/guest';
                     newPayload = this.customer.getCustomer();
                     break;
+                case 'refresh':
+                    method = 'GET';
+                    path = 'refresh';
+                    break;
+                case 'taxes':
+                    method = 'POST';
+                    path = 'taxes';
+                    break;
             }
-            if (!newPayload || this.payloadCompare(newPayload, nextRequest.dataType)) {
+            if (this.isAlreadySynced(newPayload, nextRequest.dataType)) {
                 this.requestInProgress = false;
-                this.processNextRequest();
+                this.processNextRequest(resolve, reject);
                 return;
             }
             new Ajax.Request(
                 this.url + path,
                 {
-                    method: 'POST',
+                    method: method,
                     contentType: 'application/json',
                     requestHeaders: {
                         'Authorization': 'Bearer ' + this.jwtToken,
                         'Content-Type': 'application/json',
                     },
-                    parameters: Object.toJSON({
-                        _method: window.bold[nextRequest.dataType] ? 'PUT' : 'POST',
-                        ...newPayload
-                    }),
+                    parameters: Object.toJSON(newPayload),
                     onSuccess: function (transport) {
                         const response = transport.responseText.evalJSON(true);
                         window.bold[nextRequest.dataType] = response.data[nextRequest.dataType];
                         this.requestInProgress = false;
+                        resolve(response);
                         this.processNextRequest();
                     }.bind(this),
-                    onFailure: function () {
+                    onFailure: function (error) {
                         this.requestInProgress = false;
+                        reject(error);
                         this.processNextRequest();
                     }.bind(this)
                 }
@@ -97,23 +118,32 @@
         },
 
         /**
-         * Compare new payload with saved payload.
+         * Compare new payload with saved payload to avoid duplicated requests.
          *
-         * @param newPayload
+         * @param {{}}payload
          * @param dataType
          * @return {boolean}
          * @private
          */
-        payloadCompare: function (newPayload, dataType) {
-            const savedPayload = window.bold[dataType] || {};
-            for (var key in newPayload) {
-                if (newPayload.hasOwnProperty(key) && key !== 'id' && savedPayload[key] !== newPayload[key]) {
+        isAlreadySynced: function (payload, dataType) {
+            if (!window.bold[dataType]) {
+                return false;
+            }
+            for (let key in payload) {
+                if (payload.hasOwnProperty(key) && key !== 'id' && window.bold[dataType][key] !== payload[key]) {
                     return false;
                 }
             }
             return true;
         },
     });
+
+    /**
+     * Bold Billing Address class.
+     *
+     * Used to sync billing address data with Bold Storefront API.
+     * Reads data from billing address fields and saved addresses.
+     */
     BoldAddress = Class.create({
         allowedCountries: <?php echo $this->getAllowedCountries(); ?>,
         savedBillingAddress: <?php echo $this->getSavedAddresses(); ?>,
@@ -179,7 +209,7 @@
         },
 
         /**
-         * Validate address payload.
+         * Checks if all required fields are filled and returns billing address payload for sync.
          *
          * @param payload object
          * @return void
@@ -203,6 +233,13 @@
             })
         }
     });
+
+    /**
+     * Bold Customer class.
+     *
+     * Used to sync guest customer data with Bold Storefront API.
+     * Reads data from guest customer fields.
+     */
     BoldCustomer = Class.create({
         customerFields: {
             'email_address': 'billing:email',
@@ -211,7 +248,7 @@
         },
 
         /**
-         * Get customer payload for sync.
+         * Checks if all required fields are filled and returns customer payload for sync.
          *
          * @return object
          */
@@ -230,7 +267,7 @@
         },
 
         /**
-         * Validate address payload.
+         * Validate customer payload.
          *
          * @param payload object
          * @return void
@@ -250,44 +287,53 @@
             })
         }
     });
+
+    /**
+     * Observes checkout flow, sync data and sends capture payment event to PIGI iframe.
+     */
     BoldPayment = Class.create({
         paymentType: null,
-
-        init: function (boldClient) {
-            const customerIsGuest = <?php echo $this->customerIsGuest() ?>;
-            document.observe('firecheckout:saveBefore', function (event) {
-                const memo = event.memo;
-                this.capturePayment(memo);
-            }.bind(this));
-            window.addEventListener('message', ({data}) => {
-                this.updateIframeHeight(data);
-                const type = data.responseType;
-                if (type) {
-                    switch (type) {
-                        case 'PIGI_INITIALIZED':
-                            break;
-                        case 'PIGI_REFRESH_ORDER':
-                            break;
-                        case 'PIGI_ADD_PAYMENT':
-                            if (!data.payload.success) {
-                                checkout.setLoadWaiting(false);
-                                this.paymentType = null;
-                                return;
-                            }
-                            this.paymentType = data.payload.paymentType;
-                            payment.save();
-                    }
-                }
-            });
-            if (customerIsGuest) {
-                boldClient.post('customer');
+        customerIsGuest: <?php echo $this->customerIsGuest() ?>,
+        /**
+         * Initialize checkout flow observer.
+         */
+        init: function () {
+            const iframeUrl = "<?php echo $this->getIframeUrl(); ?>";
+            const boldPaymentsCheckbox = $('p_method_bold');
+            if (!iframeUrl || !boldPaymentsCheckbox) {
+                this.hideBoldPaymentBlock();
+                return;
             }
-            boldClient.post('address');
-            const customerFields = [
-                'billing:firstname',
-                'billing:lastname',
-                'billing:email',
-            ];
+            this.boldClient = new BoldClient();
+            this.boldClient.init();
+            this.initialDataSync();
+            this.subscribeToPIGIEvents();
+            this.subscribeToPlaceOrder();
+            this.subscribeToBillingAddressFieldsChanges();
+            if (this.customerIsGuest) {
+                this.subscribeToGuestCustomerFieldsChanges();
+            }
+            this.updateBoldPaymentCheckbox(iframeUrl, boldPaymentsCheckbox);
+        },
+        /**
+         * Sync customer and billing address data with Bold Storefront API.
+         *
+         * @returns {void}
+         * @private
+         */
+        initialDataSync: function () {
+            this.boldClient.request('address');
+            if (this.customerIsGuest) {
+                this.boldClient.request('customer');
+            }
+        },
+        /**
+         * Subscribe to billing address fields change event to sync data with Bold Storefront API.
+         *
+         * @returns {void}
+         * @private
+         */
+        subscribeToBillingAddressFieldsChanges: function () {
             const billingAddressFields = [
                 'billing:firstname',
                 'billing:lastname',
@@ -302,49 +348,148 @@
                 'billing:telephone',
                 'billing:use_for_shipping_yes'
             ];
-            if (customerIsGuest) {
-                customerFields.each(function (field) {
-                    $(field).observe('change', function () {
-                        boldClient.post('customer');
-                    });
-                });
-            }
-            billingAddressFields.each(function (field) {
+            billingAddressFields.each((field) => {
                 if ($(field)) {
-                    $(field).observe('change', function () {
-                        boldClient.post('address');
+                    $(field).observe('change', () => {
+                        this.boldClient.request('address');
                     });
                 }
             });
-            const iframeUrl = "<?php echo $this->getIframeUrl(); ?>";
-            const boldPaymentsCheckbox = $('p_method_bold');
-            if (!iframeUrl || !boldPaymentsCheckbox) {
-                this.hideBoldPaymentBlock();
-                return;
-            }
-            boldPaymentsCheckbox.checked = false;
-            boldPaymentsCheckbox.observe('change', function () {
-                    if (this.checked) {
-                        const iframeElement = $('PIGI');
-                        iframeElement.src = iframeUrl;
-                        const iframeWindow = iframeElement.contentWindow;
-                        iframeWindow.postMessage({actionType: 'PIGI_REFRESH_ORDER'}, '*');
+        },
+        /**
+         * Subscribe to customer fields change event to sync data with Bold Storefront API.
+         *
+         * @returns {void}
+         * @private
+         */
+        subscribeToGuestCustomerFieldsChanges: function () {
+            const customerFields = [
+                'billing:firstname',
+                'billing:lastname',
+                'billing:email',
+            ];
+            customerFields.each((field) => {
+                if ($(field)) {
+                    $(field).observe('change', () => {
+                        this.boldClient.request('customer');
+                    });
+                }
+            });
+        },
+        /**
+         * Subscribes to place order event and sends capture event to PIGI iframe.
+         *
+         * @returns {void}
+         * @private
+         */
+        subscribeToPlaceOrder: function () {
+            document.observe('firecheckout:saveBefore', function (event) {
+                const memo = event.memo;
+                this.capturePayment(memo);
+            }.bind(this));
+        },
+        /**
+         * Subscribe to PIGI iframe events.
+         *
+         * @returns {void}
+         * @private
+         */
+        subscribeToPIGIEvents: function () {
+            window.addEventListener('message', ({data}) => {
+                const type = data.responseType;
+                const iframeElement = $('PIGI');
+                if (type) {
+                    switch (type) {
+                        case 'PIGI_UPDATE_HEIGHT':
+                            if (iframeElement.height === Math.round(data.payload.height) + 'px') {
+                                return;
+                            }
+                            iframeElement.height = Math.round(data.payload.height) + 'px';
+                            break;
+                        case 'PIGI_INITIALIZED':
+                            if (data.payload && data.payload.height) {
+                                iframeElement.height = Math.round(data.payload.height) + 'px';
+                            }
+                            break;
+                        case 'PIGI_ADD_PAYMENT':
+                            this.processPIGIAddPaymentResponse(data.payload);
+                            break;
                     }
                 }
-            );
+            });
+        },
+        /**
+         * Process PIGI add payment response.
+         *
+         * If response is successful, refresh Bold order to get the latest cart data before processing the order.
+         *
+         * @param {{}}payload
+         * @private
+         */
+        processPIGIAddPaymentResponse: function (payload) {
+            if (!payload.success) {
+                this.paymentType = null;
+                checkout.setLoadWaiting(false);
+                return;
+            }
+            this.paymentType = payload.paymentType;
+            if (!checkout.loadWaiting) {
+                checkout.setLoadWaiting('payment');
+            }
+            const errorMessage = "<?php echo $this->__('An error occurred while processing your payment. Please try again.'); ?>";
+            // Refresh Bold order to get the latest cart data before processing the order.
+            this.boldClient.request('refresh').then(function () {
+                // Need to make this request to Bold Storefront API to
+                // avoid error - "There was an error calculating the taxes" during 'process_order' request.
+                this.boldClient.request('taxes').then(function () {
+                    checkout.setLoadWaiting(false);
+                    payment.save();
+                }.bind(this)).catch(function () {
+                    checkout.setLoadWaiting(false);
+                    this.displayErrorMessage(errorMessage);
+                }.bind(this));
+            }.bind(this)).catch(function () {
+                checkout.setLoadWaiting(false);
+                this.displayErrorMessage(errorMessage);
+            }.bind(this));
         },
 
         /**
-         * Place order with bold payment.
+         * Add event listener to payment checkboxes to show/hide PIGI iframe.
+         *
+         * @param {string} iframeUrl
+         * @param {HTMLElement} boldPaymentsCheckbox
+         * @returns {void}
+         * @private
+         */
+        updateBoldPaymentCheckbox: function (iframeUrl, boldPaymentsCheckbox) {
+            boldPaymentsCheckbox.checked = false;
+            const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
+            paymentMethodsRadioButtons.forEach(function (radioButton) {
+                radioButton.addEventListener('change', function () {
+                    const boldRadioButton = document.getElementById('p_method_bold');
+                    const paymentIframe = document.getElementById('PIGI');
+                    boldRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
+                    if (boldRadioButton.checked && paymentIframe.src !== iframeUrl) {
+                        paymentIframe.src = iframeUrl;
+                        const iframeWindow = paymentIframe.contentWindow;
+                        iframeWindow.postMessage({actionType: 'PIGI_REFRESH_ORDER'}, '*');
+                    }
+                });
+            });
+        },
+        /**
+         * Send capture payment event to PIGI iframe before order is placed.
          *
          * @private
+         * @param {{}}memo
          * @return void
          */
         capturePayment: function (memo) {
             if (payment.currentMethod && payment.currentMethod !== 'bold') {
                 return;
             }
-            if (!this.paymentType) {
+            if (!this.paymentType) { // will be set after PIGI_ADD_PAYMENT event @see processPIGIAddPaymentResponse
                 checkout.setLoadWaiting(true);
                 const iframeElement = $('PIGI');
                 const iframeWindow = iframeElement.contentWindow;
@@ -358,9 +503,8 @@
             }
             this.paymentType = null;
         },
-
         /**
-         * Hide payment iframe.
+         * Hide bold payment block in case of error.
          *
          * @private
          */
@@ -379,23 +523,28 @@
         },
 
         /**
-         * Update payment iframe height.
+         * Display error message in PIGI iframe.
          *
          * @private
-         * @param {Object} data
-         * @param data
+         * @param {string} message
          */
-        updateIframeHeight: function (data) {
-            const iframeElement = $('PIGI');
-            if (!data.height || iframeElement.style.height === data.height.round() + 'px') {
-                return;
-            }
-            iframeElement.style.height = data.height.round() + 'px';
+        displayErrorMessage: function (message) {
+            const iframeElement = document.getElementById('PIGI');
+            const iframeWindow = iframeElement.contentWindow;
+            const action = {
+                actionType: 'PIGI_DISPLAY_ERROR_MESSAGE',
+                payload: {
+                    error: {
+                        message: message,
+                        sub_type: 'string_to_categorize_error',
+                    }
+                }
+            };
+            iframeWindow.postMessage(action, '*');
         }
     });
 
-    const boldClient = new BoldClient();
+    // Instantiate and initialize BoldPayment observer.
     const boldPayment = new BoldPayment();
-    boldClient.init();
-    boldPayment.init(boldClient);
+    boldPayment.init();
 </script>

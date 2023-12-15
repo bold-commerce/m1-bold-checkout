@@ -1,80 +1,226 @@
 <?php
 /**
- * Bold Payments iframe.
+ * Bold Payments PIGI iframe template.
  *
  * @var Bold_Checkout_Block_Form_Payments $this
  */
 ?>
-<?php
-if (!$this->getIframeUrl()) {
-    echo 'Bold Payments are not available.';
-    return;
-}
-?>
-<div id="bold-payments-container">
-    <iframe id='PIGI' src="<?php echo $this->escapeUrl($this->getIframeUrl()) ?>"
-            width='100%' scrolling='no' frameborder='0' style='height: 275px;'></iframe>
+<div id="bold-payments-container" style="display: none">
+    <iframe id='PIGI' scrolling='no' width="100%" frameborder='0'></iframe>
 </div>
+<span class='please-wait' id='bold-payments-iframe-loader' style='display:none;'>
+        <img src="<?php echo $this->getSkinUrl('images/opc-ajax-loader.gif') ?>"
+             alt="<?php echo $this->__('Please wait...') ?>"
+             title="<?php echo $this->__('Please wait...') ?>"
+        /> <?php echo $this->__('Please wait...') ?>
+</span>
+
 <script>
-    const continueButton = document.querySelector('#payment-buttons-container .button');
-    continueButton.removeAttribute('onclick');
-    continueButton.addEventListener('click', function (event) {
-        if (checkout.loadWaiting) {
-            return;
-        }
-        const boldPaymentsCheckbox = document.getElementById('p_method_bold');
-        if (!boldPaymentsCheckbox.checked) {
-            payment.save();
-        }
-        checkout.setLoadWaiting('payment');
-        const iframeElement = document.querySelector('iframe#PIGI');
-        const iframeWindow = iframeElement.contentWindow;
-        const clearAction = {actionType: 'PIGI_CLEAR_ERROR_MESSAGES'};
-        const action = {actionType: 'PIGI_ADD_PAYMENT'};
-        iframeWindow.postMessage(clearAction, '*');
-        iframeWindow.postMessage(action, '*');
-    });
-
-    const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
-    paymentMethodsRadioButtons.forEach(function(radioButton) {
-        radioButton.addEventListener('change', function() {
-            const myRadioButton = document.getElementById('p_method_bold');
-            const paymentIframe = document.getElementById('PIGI');
-            myRadioButton.checked ? paymentIframe.style.display = 'block' : paymentIframe.style.display = 'none';
-        });
-    });
-    document.getElementById('p_method_bold').checked = true;
-    window.addEventListener('message', ({data}) => {
-        updateIframeHeight(data);
-        const type = data.responseType;
-        if (type) {
-            switch (type) {
-                case 'PIGI_INITIALIZED':
-                    break;
-                case 'PIGI_REFRESH_ORDER':
-                    break;
-                case 'PIGI_ADD_PAYMENT':
-                    checkout.setLoadWaiting(false);
-                    if (!data.payload.success) {
-                        return;
-                    }
-                    payment.save();
-            }
-        }
-    });
-
     /**
-     * Update payment iframe height.
-     *
-     * @private
-     * @param {Object} data
-     * @param data
+     * Bold Checkout Payment Service.
      */
-    function updateIframeHeight(data) {
-        const iframeElement = document.querySelector('iframe#PIGI');
-        if (!data.height || iframeElement.style.height === data.height.round() + 'px') {
-            return;
+    BoldPayment = Class.create({
+        jwtToken: "<?php echo $this->getJwtToken(); ?>",
+        url: "<?php echo $this->getStoreFrontClientUrl(); ?>",
+        iframeUrl: "<?php echo $this->escapeUrl($this->getIframeUrl()); ?>",
+        /**
+         * Initialize Bold Payment.
+         *
+         * Subscribe to PIGI iframe events, refresh Bold order to get the latest cart data, (At this point cart should already have billing address, shipping address and shipping method.)
+         * and after show the PIGI iframe.
+         *
+         * @returns {void}
+         * @public
+         */
+        init: function () {
+            this.subscribeToPIGIEvents();
+            const boldRadioButton = document.getElementById('p_method_bold');
+            if (boldRadioButton.checked) {
+                this.showPIGI();
+            }
+            this.rewriteContinueButton();
+            this.updateBoldPaymentCheckbox();
+        },
+        /**
+         * Rewrite continue button onclick event to send add payment action
+         * to PIGI iframe in case Bold payment method is selected.
+         *
+         * @returns {void}
+         * @private
+         */
+        rewriteContinueButton: function () {
+            const continueButton = document.querySelector('#payment-buttons-container .button');
+            continueButton.removeAttribute('onclick');
+            continueButton.addEventListener('click', function () {
+                if (checkout.loadWaiting) {
+                    return;
+                }
+                const boldPaymentsCheckbox = document.getElementById('p_method_bold');
+                if (!boldPaymentsCheckbox.checked) {
+                    payment.save();
+                    return;
+                }
+                checkout.setLoadWaiting('payment');
+                const iframeElement = document.getElementById('PIGI');
+                const iframeWindow = iframeElement.contentWindow;
+                const clearAction = {actionType: 'PIGI_CLEAR_ERROR_MESSAGES'};
+                const action = {actionType: 'PIGI_ADD_PAYMENT'};
+                iframeWindow.postMessage(clearAction, '*');
+                iframeWindow.postMessage(action, '*');
+            });
+        },
+        /**
+         * Subscribe to payment method radio buttons change event to show/hide PIGI iframe.
+         *
+         * @returns {void}
+         * @public
+         */
+        updateBoldPaymentCheckbox: function () {
+            const self = this;
+            const boldRadioButton = document.getElementById('p_method_bold');
+            const paymentMethodsRadioButtons = document.querySelectorAll('input[type="radio"][name="payment[method]"]');
+            paymentMethodsRadioButtons.forEach(function (radioButton) {
+                radioButton.addEventListener('change', function () {
+                    boldRadioButton.checked ? self.showPIGI() : self.hidePIGI();
+                });
+            });
+        },
+        /**
+         * Refresh Bold order to get the latest cart data and show PIGI iframe.
+         *
+         * @returns {void}
+         * @private
+         */
+        showPIGI: function () {
+            const iframeElement = document.getElementById('PIGI');
+            const boldPaymentsContainer = document.getElementById('bold-payments-container');
+            if (iframeElement.src) {
+                boldPaymentsContainer.style.display = 'block';
+                return;
+            }
+            const loader = document.getElementById('bold-payments-iframe-loader');
+            loader.style.display = 'block';
+            this.request('refresh', 'GET').then(function () {
+                iframeElement.src = this.iframeUrl;
+                boldPaymentsContainer.style.display = 'block';
+                loader.style.display = 'none';
+            }.bind(this)).catch(function () {
+                const boldPaymentsCheckbox = document.getElementById('p_method_bold');
+                boldPaymentsCheckbox.hidden = true;
+            });
+        },
+        /**
+         * Hide PIGI iframe.
+         *
+         * @returns {void}
+         * @private
+         */
+        hidePIGI: function () {
+            const boldPaymentsContainer = document.getElementById('bold-payments-container');
+            boldPaymentsContainer.style.display = 'none';
+        },
+        /**
+         * Perform request to Bold Storefront API and return a Promise.
+         *
+         * @param {string} path
+         * @param {string} method
+         * @param {{}} payload
+         * @returns {Promise}
+         */
+        request: function (path, method, payload = {}) {
+            return new Promise((resolve, reject) => {
+                new Ajax.Request(
+                    this.url + path,
+                    {
+                        method: method,
+                        contentType: 'application/json',
+                        requestHeaders: {
+                            'Authorization': 'Bearer ' + this.jwtToken,
+                            'Content-Type': 'application/json',
+                        },
+                        parameters: payload,
+                        onSuccess: function (response) {
+                            resolve(response);
+                        },
+                        onFailure: function (error) {
+                            reject(error);
+                        }
+                    }
+                );
+            });
+        },
+        /**
+         * Subscribe to PIGI iframe events.
+         */
+        subscribeToPIGIEvents: function () {
+            window.addEventListener('message', ({data}) => {
+                const type = data.responseType;
+                const iframeElement = document.getElementById('PIGI');
+                if (type) {
+                    switch (type) {
+                        case 'PIGI_UPDATE_HEIGHT':
+                            if (iframeElement.height === Math.round(data.payload.height) + 'px') {
+                                return;
+                            }
+                            iframeElement.height = Math.round(data.payload.height) + 'px';
+                            break;
+                        case 'PIGI_INITIALIZED':
+                            if (data.payload && data.payload.height) {
+                                iframeElement.height = Math.round(data.payload.height) + 'px';
+                            }
+                            break;
+                        case 'PIGI_ADD_PAYMENT':
+                            if (!data.payload.success) {
+                                checkout.setLoadWaiting(false);
+                                return;
+                            }
+                            if (!checkout.loadWaiting) {
+                                checkout.setLoadWaiting('payment');
+                            }
+                            const errorMessage = "<?php echo $this->__('An error occurred while processing your payment. Please try again.') ?>";
+                            // Refresh Bold order to get the latest cart data before processing the order.
+                            this.request('refresh', 'GET').then(function () {
+                                // Need to make this request to Bold Storefront API to
+                                // avoid error - "There was an error calculating the taxes" during 'process_order' request.
+                                this.request('taxes', 'POST').then(function () {
+                                    checkout.setLoadWaiting(false);
+                                    payment.save();
+                                }).catch(function () {
+                                    checkout.setLoadWaiting(false);
+                                    this.displayErrorMessage(errorMessage);
+                                }.bind(this));
+                            }.bind(this)).catch(function () {
+                                checkout.setLoadWaiting(false);
+                                this.displayErrorMessage(errorMessage);
+                            }.bind(this));
+                    }
+                }
+            });
+        },
+        /**
+         * Display error message in PIGI iframe.
+         *
+         * @private
+         * @param {string} message
+         */
+        displayErrorMessage: function (message) {
+            const iframeElement = document.getElementById('PIGI');
+            const iframeWindow = iframeElement.contentWindow;
+            const action = {
+                actionType: 'PIGI_DISPLAY_ERROR_MESSAGE',
+                payload: {
+                    error: {
+                        message: message,
+                        sub_type: 'string_to_categorize_error',
+                    }
+                }
+            };
+            iframeWindow.postMessage(action, '*');
         }
-        iframeElement.style.height = data.height.round() + 'px';
-    }
+    });
+</script>
+
+<script>
+    const boldPayment = new BoldPayment();
+    boldPayment.init();
 </script>
