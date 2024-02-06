@@ -83,13 +83,17 @@ class Bold_Checkout_Service_Extractor_Quote
     private static function extractCustomer(Mage_Sales_Model_Quote $quote)
     {
         $customer = $quote->getCustomer();
-        if ($quote->getCustomerIsGuest()) {
+        if ($quote->getCustomerIsGuest() || $customer->getId() == null) {
             return [
-                'email' => $customer->getEmail(),
-                'firstname' => $customer->getFirstname(),
-                'lastname' => $customer->getLastname(),
+                'email' => $customer->getEmail() 
+                    ?: $quote->getBillingAddress()->getEmail(),
+                'firstname' => $customer->getFirstname()
+                    ?: $quote->getBillingAddress()->getFirstname(),
+                'lastname' => $customer->getLastname()
+                    ?: $quote->getBillingAddress()->getLastname(),
             ];
         }
+
         return current(Bold_Checkout_Service_Extractor_Customer::extract([$customer]));
     }
 }
