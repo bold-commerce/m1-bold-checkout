@@ -127,6 +127,40 @@ class Bold_Checkout_Api_Platform_Cart
     }
 
     /**
+     * Gets the quote total information.
+     *
+     * @param Mage_Core_Controller_Request_Http $request
+     * @param Mage_Core_Controller_Response_Http $response
+     * @return Mage_Core_Controller_Response_Http
+     */
+    public static function totalsInformation(
+        Mage_Core_Controller_Request_Http $request,
+        Mage_Core_Controller_Response_Http $response
+    ) {
+        preg_match('/carts\/(.*)\/totals-information/', $request->getRequestUri(), $cartIdMatches);
+        $cartId = isset($cartIdMatches[1]) ? $cartIdMatches[1] : null;
+        /** @var Mage_Sales_Model_Quote $quote */
+        $quote = Mage::getModel('sales/quote');
+        $quote->loadActive($cartId);
+        if (!$quote->getId()) {
+            return self::getErrorResult($cartId, $response);
+        }
+        $payload = json_decode($request->getRawBody());
+        self::updateAddress($quote->getShippingAddress(), $payload->addressInformation->address, $quote);
+        $quote->getShippingAddress()->setCollectShippingRates(true);
+        $quote->setDataChanges(true);
+        $quote->collectTotals();
+        try {
+            return Bold_Checkout_Rest::buildResponse(
+                $response,
+                json_encode(Bold_Checkout_Service_Extractor_Quote_Totals::extract($quote))
+            );
+        } catch (Mage_Core_Model_Store_Exception $e) {
+            return self::buildErrorResponse($e->getMessage(), $response);
+        }
+    }
+
+    /**
      * Set cart coupon code endpoint.
      *
      * @param Mage_Core_Controller_Request_Http $request
@@ -166,7 +200,9 @@ class Bold_Checkout_Api_Platform_Cart
                 $error->message = $message;
                 $error->code = 422;
                 $error->type = 'server.validation_error';
-                return Bold_Checkout_Rest::buildResponse($response, json_encode(
+                return Bold_Checkout_Rest::buildResponse(
+                    $response,
+                    json_encode(
                         [
                             'errors' => [$error],
                         ]
