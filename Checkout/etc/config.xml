@@ -161,6 +161,11 @@
                             <handler>Bold_Checkout_Api_Platform_Cart::estimateShippingMethods</handler>
                         </POST>
                     </estimate-shipping-methods>
+                    <totals-information>
+                        <POST>
+                            <handler>Bold_Checkout_Api_Platform_Cart::totalsInformation</handler>
+                        </POST>
+                    </totals-information>
                 </_cartId>
             </carts>
             <customers>
