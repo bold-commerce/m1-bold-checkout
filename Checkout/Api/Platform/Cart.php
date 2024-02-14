@@ -127,7 +127,9 @@ class Bold_Checkout_Api_Platform_Cart
     }
 
     /**
-     * Gets the quote total information.
+     * Sets the shipping or billing address and returns the quote total information.
+     * If the cart is not virtual, the shipping address will be set. Otherwise the billing
+     * address will be set.
      *
      * @param Mage_Core_Controller_Request_Http $request
      * @param Mage_Core_Controller_Response_Http $response
@@ -146,11 +148,22 @@ class Bold_Checkout_Api_Platform_Cart
             return self::getErrorResult($cartId, $response);
         }
         $payload = json_decode($request->getRawBody());
-        self::updateAddress($quote->getShippingAddress(), $payload->addressInformation->address, $quote);
-        $quote->getShippingAddress()->setCollectShippingRates(true);
-        $quote->setDataChanges(true);
-        $quote->collectTotals();
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
         try {
+            self::prepareStore($quote);
+            if (!$quote->isVirtual()) {
+                self::updateAddress($quote->getShippingAddress(), $payload->addressInformation->address, $quote);
+                $quote->getShippingAddress()->setCollectShippingRates(true);
+            } else {
+                self::updateAddress($quote->getBillingAddress(), $payload->addressInformation->address, $quote);
+            }
+            $quote->setDataChanges(true);
+            $quote->collectTotals();
+            if (!$config->isCheckoutTypeSelfHosted((int)$quote->getStore()->getWebsiteId())) {
+                $quote->save();
+            }
+
             return Bold_Checkout_Rest::buildResponse(
                 $response,
                 json_encode(Bold_Checkout_Service_Extractor_Quote_Totals::extract($quote))
