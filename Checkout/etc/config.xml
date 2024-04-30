@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Bold_Checkout>
-            <version>2.0.2</version>
+            <version>2.0.3</version>
         </Bold_Checkout>
     </modules>
     <global>
