@@ -8,7 +8,7 @@ $resource = Mage::getSingleton('core/resource');
 $installer->startSetup();
 
 $existingLifeElements = getLifeElements($resource);
-$updatedLifeElements = updateLifeElements($allLifeElements);
+$updatedLifeElements = updateLifeElements($existingLifeElements);
 saveLifeElements($resource, $updatedLifeElements);
 
 $installer->endSetup();
