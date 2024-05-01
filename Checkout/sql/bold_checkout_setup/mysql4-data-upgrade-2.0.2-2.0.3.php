@@ -43,7 +43,7 @@ function getLifeElements(Mage_Core_Model_Resource $resource)
  * Save updated Life elements to database.
  *
  * @param Mage_Core_Model_Resource $resource
- * @param array $result
+ * @param array $lifeElements
  * @return void
  */
 function saveLifeElements(Mage_Core_Model_Resource $resource, array $lifeElements)
