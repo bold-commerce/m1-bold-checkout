@@ -7,9 +7,9 @@ $resource = Mage::getSingleton('core/resource');
 
 $installer->startSetup();
 
-$allLifeElements = getLifeElements($resource);
-$result = updateLifeElements($allLifeElements);
-setLifeElements($resource, $result);
+$existingLifeElements = getLifeElements($resource);
+$updatedLifeElements = updateLifeElements($allLifeElements);
+saveLifeElements($resource, $updatedLifeElements);
 
 $installer->endSetup();
 
@@ -46,13 +46,13 @@ function getLifeElements(Mage_Core_Model_Resource $resource)
  * @param array $result
  * @return void
  */
-function setLifeElements(Mage_Core_Model_Resource $resource, array $result)
+function saveLifeElements(Mage_Core_Model_Resource $resource, array $lifeElements)
 {
     $connection = $resource->getConnection(\Mage_Core_Model_Resource::DEFAULT_WRITE_RESOURCE);
     $table = $connection->getTableName(Mage_Core_Model_Config_Data::ENTITY);
     $connection->insertOnDuplicate(
         $table,
-        $result
+        $lifeElements
     );
 }
 
