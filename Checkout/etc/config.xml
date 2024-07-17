@@ -151,6 +151,13 @@
                 </observers>
             </admin_system_config_changed_section_checkout>
         </events>
+        <layout>
+            <updates>
+                <bold_checkout>
+                    <file>bold/checkout.xml</file>
+                </bold_checkout>
+            </updates>
+        </layout>
     </adminhtml>
     <rest>
         <V1>

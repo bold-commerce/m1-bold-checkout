@@ -15,6 +15,11 @@
                             <show_in_website>0</show_in_website>
                             <frontend_model>bold_checkout/adminhtml_system_config_notice</frontend_model>
                         </notice>
+                        <onboarding_banner>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <frontend_model>bold_checkout/adminhtml_system_config_form_field_onboarding_banner</frontend_model>
+                        </onboarding_banner>
                         <enabled translate="label">
                             <label>Enable Bold Checkout</label>
                             <frontend_type>select</frontend_type>
