@@ -1,10 +1,10 @@
 <?php
 
-class Bold_Checkout_Block_Adminhtml_System_Config_Form_Field_Onboarding_Banner
+class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
     extends Mage_Adminhtml_Block_Template
     implements Varien_Data_Form_Element_Renderer_Interface
 {
-    protected $_template = 'bold/checkout/form/field/onboarding/banner.phtml';
+    protected $_template = 'bold/checkout/form/fieldset/onboarding.phtml';
     /**
      * @var Mage_Core_Model_Website|null
      */
