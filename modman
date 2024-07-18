@@ -1,0 +1,26 @@
+# Bold Checkout
+Checkout app/code/community/Bold/Checkout
+Checkout/design/adminhtml/default/default/layout/bold/* app/design/adminhtml/default/default/layout/bold
+Checkout/design/adminhtml/default/default/template/bold/* app/design/adminhtml/default/default/template/bold
+Checkout/design/frontend/base/default/layout/bold/* app/design/frontend/base/default/layout/bold
+Checkout/design/frontend/base/default/template/bold/* app/design/frontend/base/default/template/bold
+Checkout/etc/Bold_Checkout.xml app/etc/modules
+Checkout/locale/de_DE/*  app/locale/de_DE
+Checkout/skin/adminhtml/default/default/bold/* skin/adminhtml/default/default/bold
+
+# Bold Checkout Integration
+CheckoutIntegration app/code/community/Bold/CheckoutIntegration
+CheckoutIntegration/design/adminhtml/default/default/template/bold/* app/design/adminhtml/default/default/template/bold
+CheckoutIntegration/etc/Bold_CheckoutIntegration.xml app/etc/modules
+
+# Bold Checkout Self Hosted
+CheckoutSelfHosted app/code/community/Bold/CheckoutSelfHosted
+CheckoutSelfHosted/design/frontend/base/default/layout/* app/design/frontend/base/default/layout
+CheckoutSelfHosted/design/frontend/base/default/template/bold/* app/design/frontend/base/default/template/bold
+CheckoutSelfHosted/design/frontend/base/default/template/page/* app/design/frontend/base/default/template/page
+CheckoutSelfHosted/etc/Bold_CheckoutSelfHosted.xml app/etc/modules
+CheckoutSelfHosted/media/bold/* media/bold
+
+# Bold Checkout TM Fire Checkout
+CheckoutTmFireCheckout app/code/community/Bold/CheckoutTmFireCheckout
+CheckoutTmFireCheckout/design/frontend/base/default/template/bold/* app/design/frontend/base/default/template/bold
