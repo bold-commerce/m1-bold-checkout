@@ -23,7 +23,7 @@
         font-size: 13px;
     }
 
-    button {
+    .bold-button {
         flex: 0 0 auto;
         display: flex;
         flex-flow: row nowrap;
