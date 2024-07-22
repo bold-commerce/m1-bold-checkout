@@ -23,8 +23,8 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
      *      body_link_url?: string,
      *      button_text: string,
      *      button_link: string,
-     *      sidebar_link_text: string,
-     *      sidebar_link_url: string
+     *      sidebar_link_text?: string,
+     *      sidebar_link_url?: string
      *  }|null
      */
     public function getOnboardingBannerData()
@@ -46,8 +46,8 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
          *     body_link_url?: string,
          *     button_text: string,
          *     button_link: string,
-         *     sidebar_link_text: string,
-         *     sidebar_link_url: string,
+         *     sidebar_link_text?: string,
+         *     sidebar_link_url?: string,
          *     meessage?: string,
          *     errors?: array{
          *         message: string,

@@ -44,4 +44,8 @@
             margin-right: .75em;
         }
     }
+
+    .onboarding-sidebar-link {
+        text-align: right;
+    }
 }
