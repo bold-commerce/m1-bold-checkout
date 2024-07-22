@@ -35,10 +35,7 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
             return null;
         }
 
-        /** @var Bold_Checkout_Model_Config $config */
-        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        $apiUrl = $this->_getBasePlatformConnectorUrl() . '/onboard_banner_data/'
-            . (!$config->isCheckoutEnabled($currentWebsite->getId()) ? 'in_progress' : 'complete');
+        $apiUrl = $this->_getBasePlatformConnectorUrl() . '/onboard_banner_data/' . $this->getOnboardingStatus();
         /** @var array{
          *     header: string,
          *     body_text: string,
@@ -66,6 +63,24 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
         }
 
         return $result;
+    }
+
+    /**
+     * @return string
+     * @phpstan-return 'unknown'|'in_progress'|'complete'
+     */
+    public function getOnboardingStatus()
+    {
+        $currentWebsite = $this->_getCurrentWebsite();
+
+        if ($currentWebsite === null) {
+            return 'unknown';
+        }
+
+        /** @var Bold_Checkout_Model_Config $config */
+        $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
+
+        return !$config->isCheckoutEnabled($currentWebsite->getId()) ? 'in_progress' : 'complete';
     }
 
     /**
