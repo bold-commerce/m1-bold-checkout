@@ -19,6 +19,10 @@
         color: #eb5e00;
     }
 
+    p {
+        font-size: 13px;
+    }
+
     button {
         flex: 0 0 auto;
         display: flex;
