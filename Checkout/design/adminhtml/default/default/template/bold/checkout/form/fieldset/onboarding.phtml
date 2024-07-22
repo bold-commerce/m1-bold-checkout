@@ -10,7 +10,17 @@ endif;
 <div id="bold-checkout-onboarding">
     <div>
         <h2><?php echo $this->escapeHtml($onboardingBannerData['header']) ?></h2>
-        <p><?php echo $this->escapeHtml($onboardingBannerData['body_text']) ?></p>
+        <p>
+            <?php echo $this->escapeHtml($onboardingBannerData['body_text']) ?>
+            <?php if (
+                array_key_exists('body_link_url', $onboardingBannerData)
+                && array_key_exists('body_link_text', $onboardingBannerData)
+            ): ?>
+                <a href="<?php echo $this->escapeUrl($onboardingBannerData['body_link_url']) ?>" target="_blank">
+                    <?php echo $this->escapeHtml($onboardingBannerData['body_link_text']) ?>
+                </a>
+            <?php endif ?>
+        </p>
     </div>
 
     <button

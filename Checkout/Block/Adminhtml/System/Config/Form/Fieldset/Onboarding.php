@@ -19,8 +19,8 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
      * @return array{
      *      header: string,
      *      body_text: string,
-     *      body_link_text: string,
-     *      body_link_url: string,
+     *      body_link_text?: string,
+     *      body_link_url?: string,
      *      button_text: string,
      *      button_link: string,
      *      sidebar_link_text: string,
@@ -42,8 +42,8 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
         /** @var array{
          *     header: string,
          *     body_text: string,
-         *     body_link_text: string,
-         *     body_link_url: string,
+         *     body_link_text?: string,
+         *     body_link_url?: string,
          *     button_text: string,
          *     button_link: string,
          *     sidebar_link_text: string,
