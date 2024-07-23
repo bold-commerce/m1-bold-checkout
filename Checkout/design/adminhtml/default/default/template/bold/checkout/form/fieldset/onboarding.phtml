@@ -6,6 +6,8 @@ $onboardingBannerData = $this->getOnboardingBannerData();
 if ($onboardingBannerData === null):
     return '';
 endif;
+
+$onboardingStatus = $this->getOnboardingStatus();
 ?>
 <div id="bold-checkout-onboarding">
     <div class="onboarding-content">
@@ -25,19 +27,26 @@ endif;
 
     <div class="onboarding-sidebar">
         <p>
-            <button
-                class="bold-button"
-                type="button"
-                onclick="
-                    window.open(
-                        '<?php echo $this->escapeUrl($onboardingBannerData['button_link']) ?>',
-                        'Bold Account Center',
-                        'width=1400,height=950'
-                    )
-                "
-            >
-                <?php echo $this->escapeHtml($onboardingBannerData['button_text']) ?>
-            </button>
+            <?php if ($onboardingStatus === 'in_progress'): ?>
+                <button
+                    class="bold-button"
+                    type="button"
+                    onclick="
+                        window.open(
+                            '<?php echo $this->escapeUrl($onboardingBannerData['button_link']) ?>',
+                            'Bold Account Center',
+                            'width=1400,height=950'
+                        )
+                    "
+                >
+                    <?php echo $this->escapeHtml($onboardingBannerData['button_text']) ?>
+                </button>
+            <?php endif ?>
+            <?php if ($onboardingStatus === 'complete'): ?>
+                <a class="bold-button" href="<?php echo $this->escapeUrl($onboardingBannerData['button_link']) ?>">
+                    <?php echo $this->escapeHtml($onboardingBannerData['button_text']) ?>
+                </a>
+            <?php endif ?>
         </p>
         <?php if (
             array_key_exists('sidebar_link_url', $onboardingBannerData)

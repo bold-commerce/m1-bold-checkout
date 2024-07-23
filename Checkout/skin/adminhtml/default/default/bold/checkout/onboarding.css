@@ -33,6 +33,8 @@
         font-size: 1.25em;
         border: 0;
         font-weight: normal;
+        padding: 0.25rem 1em 0.25rem;
+        text-decoration: none;
 
         &:before {
             content: "";
