@@ -43,7 +43,7 @@ $onboardingStatus = $this->getOnboardingStatus();
                 </button>
             <?php endif ?>
             <?php if ($onboardingStatus === 'complete'): ?>
-                <a class="bold-button" href="<?php echo $this->escapeUrl($onboardingBannerData['button_link']) ?>">
+                <a class="bold-button" href="<?php echo $this->escapeUrl($onboardingBannerData['button_link']) ?>" target="_blank">
                     <?php echo $this->escapeHtml($onboardingBannerData['button_text']) ?>
                 </a>
             <?php endif ?>
