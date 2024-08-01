@@ -162,7 +162,7 @@
                         <checkout_url translate="label">
                             <label>Checkout Url</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>116</sort_order>
+                            <sort_order>115</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>validate-url</frontend_class>
@@ -170,11 +170,19 @@
                         <platform_connector_url translate="label">
                             <label>Platform Connector Url</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>117</sort_order>
+                            <sort_order>116</sort_order>
                             <show_in_default>0</show_in_default>
                             <show_in_website>1</show_in_website>
                             <frontend_class>validate-url</frontend_class>
                         </platform_connector_url>
+                        <account_center_url translate="label">
+                            <label>Account Center URL</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>117</sort_order>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <frontend_class>validate-url</frontend_class>
+                        </account_center_url>
                         <integration_callback_url translate="label">
                             <label>Platform Connector Integration Callback URL</label>
                             <frontend_type>text</frontend_type>
