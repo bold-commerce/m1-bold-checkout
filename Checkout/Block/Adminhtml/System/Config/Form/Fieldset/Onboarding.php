@@ -35,7 +35,7 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
             return null;
         }
 
-        $apiUrl = $this->_getBasePlatformConnectorUrl() . '/onboard_banner_data/' . $this->getOnboardingStatus();
+        $apiUrl = $this->_getBaseAccountCenterUrl() . '/onboarding_banner/magento-1/' . $this->getOnboardingStatus();
         /** @var array{
          *     header: string,
          *     body_text: string,
@@ -106,7 +106,7 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
     /**
      * @return string
      */
-    private function _getBasePlatformConnectorUrl()
+    private function _getBaseAccountCenterUrl()
     {
         $currentWebsite = $this->_getCurrentWebsite();
 
@@ -116,9 +116,7 @@ class Bold_Checkout_Block_Adminhtml_System_Config_Form_Fieldset_Onboarding
 
         /** @var Bold_Checkout_Model_Config $config */
         $config = Mage::getSingleton(Bold_Checkout_Model_Config::RESOURCE);
-        $platformConnectorUrl = $config->getPlatformConnectorUrl($currentWebsite->getId());
-        $platformConnectorUrlParts = parse_url($platformConnectorUrl);
 
-        return $platformConnectorUrlParts['scheme'] . '://' . $platformConnectorUrlParts['host'];
+        return $config->getAccountCenterUrl($currentWebsite->getId());
     }
 }
