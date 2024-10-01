@@ -112,6 +112,7 @@
                 <url>https://api.boldcommerce.com/</url>
                 <checkout_url>https://flows.boldcommerce.com/</checkout_url>
                 <platform_connector_url>https://magento-1-connector.boldapps.net/platform/shops/</platform_connector_url>
+                <account_center_url>https://apps.boldapps.net/</account_center_url>
                 <integration_callback_url>https://magento-1-connector.boldapps.net/platform/oauth/callback/</integration_callback_url>
                 <integration_identity_url>https://magento-1-connector.boldapps.net/platform/oauth/identify/</integration_identity_url>
                 <weight_unit>kg</weight_unit>
@@ -151,6 +152,13 @@
                 </observers>
             </admin_system_config_changed_section_checkout>
         </events>
+        <layout>
+            <updates>
+                <bold_checkout>
+                    <file>bold/checkout.xml</file>
+                </bold_checkout>
+            </updates>
+        </layout>
     </adminhtml>
     <rest>
         <V1>

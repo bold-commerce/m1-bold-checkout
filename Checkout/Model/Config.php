@@ -17,6 +17,7 @@ class Bold_Checkout_Model_Config
     const PATH_API_URL = 'checkout/bold_advanced/url';
     const PATH_CHECKOUT_URL = 'checkout/bold_advanced/checkout_url';
     const PATH_PLATFORM_CONNECTOR_URL = 'checkout/bold_advanced/platform_connector_url';
+    const PATH_ACCOUNT_CENTER_URL = 'checkout/bold_advanced/account_center_url';
     const PATH_INTEGRATION_IDENTITY_LINK_URL = 'checkout/bold_advanced/integration_identity_url';
     const PATH_INTEGRATION_CALLBACK_URL = 'checkout/bold_advanced/integration_callback_url';
     const PATH_WEIGHT_CONVERSION_RATE = 'checkout/bold_advanced/weight_conversion_rate';
@@ -307,6 +308,17 @@ class Bold_Checkout_Model_Config
     public function getPlatformConnectorUrl($websiteId)
     {
         return rtrim(Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_PLATFORM_CONNECTOR_URL), '/');
+    }
+
+    /**
+     * Retrieve Account Center URL.
+     *
+     * @param int $websiteId
+     * @return string
+     */
+    public function getAccountCenterUrl($websiteId)
+    {
+        return rtrim(Mage::app()->getWebsite($websiteId)->getConfig(self::PATH_ACCOUNT_CENTER_URL), '/');
     }
 
     /**
