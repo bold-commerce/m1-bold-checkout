@@ -200,16 +200,20 @@ class Bold_Checkout_Service_PaymentMethod extends Mage_Payment_Model_Method_Abst
                 . ' Please make sure Bold Checkout module output is enabled and Bold Checkout Integration is on.'
             );
         }
-        $orderGrandTotal = Mage::app()->getStore()->roundPrice($order->getGrandTotal());
-        $amount = Mage::app()->getStore()->roundPrice($amount);
-        if ($orderGrandTotal <= $amount) {
-            $transactionId = Bold_Checkout_Api_Bold_Payment::refundFull($order);
-            $payment->setTransactionId($transactionId)
-                ->setIsTransactionClosed(1)
-                ->setShouldCloseParentTransaction(true);
-            return $this;
+        if ($payment->getCreditmemo()->getTransactionId() !== null){ 
+            $transactionId = $payment->getCreditmemo()->getTransactionId();
+        } else {
+            $orderGrandTotal = Mage::app()->getStore()->roundPrice($order->getGrandTotal());
+            $amount = Mage::app()->getStore()->roundPrice($amount);
+            if ($orderGrandTotal <= $amount) {
+                $transactionId = Bold_Checkout_Api_Bold_Payment::refundFull($order);
+                $payment->setTransactionId($transactionId)
+                    ->setIsTransactionClosed(1)
+                    ->setShouldCloseParentTransaction(true);
+                return $this;
+            }
+            $transactionId = Bold_Checkout_Api_Bold_Payment::refundPartial($order, (float)$amount);
         }
-        $transactionId = Bold_Checkout_Api_Bold_Payment::refundPartial($order, (float)$amount);
         $payment->setTransactionId($transactionId)->setIsTransactionClosed(1);
         if ((float)$payment->getBaseAmountPaid() === $payment->getBaseAmountRefunded() + $amount) {
             $payment->setShouldCloseParentTransaction(true);
