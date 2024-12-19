@@ -20,7 +20,34 @@ class Bold_Checkout_Api_Platform_OrderPayments
         $payload = json_decode($request->getRawBody());
         /** @var Mage_Sales_Model_Order $order */
         $order = Mage::getModel('sales/order')->load($payload->payment->payment->parent_id);
-        if (self::isDelayedCapture($order) || $order->hasInvoices()) {
+
+        if ($payload->payment->transaction->txn_type === 'refund') {
+            $invoiceCollection = $order->getInvoiceCollection();
+            $invoice = $invoiceCollection->getFirstItem();
+
+            try {
+                self::creditmemo($order, $invoice, $payload->payment->transaction->txn_id);
+            } catch (Exception $e) {
+                Mage::logException($e);
+                $error = new stdClass();
+                $error->message = $e->getMessage();
+                $error->code = 500;
+                $error->type = 'server.internal_error';
+                return Bold_Checkout_Rest::buildResponse($response, json_encode(['errors' => [$error]]));
+            }
+
+            return Bold_Checkout_Rest::buildResponse(
+                $response,
+                json_encode(
+                    [
+                        'errors' => [],
+                        'payment' =>  Bold_Checkout_Service_Extractor_Order_Payment::extract($order->getPayment()), 
+                    ]
+                )
+            );
+        }
+
+        if ((self::isDelayedCapture($order) || $order->hasInvoices())) {
             return Bold_Checkout_Rest::buildResponse(
                 $response,
                 json_encode(
@@ -39,6 +66,7 @@ class Bold_Checkout_Api_Platform_OrderPayments
         try {
             self::invoice($order);
         } catch (Exception $e) {
+            Mage::logException($e);
             $error = new stdClass();
             $error->message = $e->getMessage();
             $error->code = 500;
@@ -79,6 +107,33 @@ class Bold_Checkout_Api_Platform_OrderPayments
         $invoice->getOrder()->setIsInProcess(true);
         $order->addRelatedObject($invoice);
         $order->save();
+    }
+
+   /**
+     * Create invoice for order.
+     *
+     * @param Mage_Sales_Model_Order $order
+     * @param Mage_Sales_Model_Order_Invoice $invoice
+     * @return void
+     * @throws Exception
+     */
+    private static function creditmemo(
+        Mage_Sales_Model_Order $order, 
+        Mage_Sales_Model_Order_Invoice $invoice,
+        $transactionId
+    ) {
+        $creditmemo = Mage::getModel('sales/service_order', $order)
+            ->prepareInvoiceCreditmemo($invoice);
+        $creditmemo->setTransactionId($transactionId);
+        $creditmemo->register();
+
+        $transactionSave = Mage::getModel('core/resource_transaction')
+            ->addObject($creditmemo)
+            ->addObject($creditmemo->getOrder());
+        if ($creditmemo->getInvoice()) {
+            $transactionSave->addObject($creditmemo->getInvoice());
+        }
+        $transactionSave->save();
     }
 
     /**
