@@ -207,9 +207,11 @@ class Bold_Checkout_Service_PaymentMethod extends Mage_Payment_Model_Method_Abst
             $amount = Mage::app()->getStore()->roundPrice($amount);
             if ($orderGrandTotal <= $amount) {
                 $transactionId = Bold_Checkout_Api_Bold_Payment::refundFull($order);
-                $payment->setTransactionId($transactionId)
-                    ->setIsTransactionClosed(1)
-                    ->setShouldCloseParentTransaction(true);
+                if(!empty($transactionId)) {
+                    $payment->setTransactionId($transactionId)
+                        ->setIsTransactionClosed(1)
+                        ->setShouldCloseParentTransaction(true);
+                }
                 return $this;
             }
             $transactionId = Bold_Checkout_Api_Bold_Payment::refundPartial($order, (float)$amount);
