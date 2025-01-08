@@ -5,6 +5,7 @@
         "php",
         "api"
     ],
+    "version": "2.2.0",
     "require": {
         "php": ">=5.5",
         "ext-curl": "*",
