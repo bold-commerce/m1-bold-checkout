@@ -19,7 +19,6 @@ class Bold_Checkout_Service_Extractor_Quote_Totals_Item
             if (!Bold_Checkout_Service_Extractor_Quote_Item::shouldAppearInCart($item)) {
                 continue;
             }
-            $items[] = self::extractTotalsItem($item);
             $newItem = self::extractTotalsItem($item);
             Mage::dispatchEvent('bold_checkout_item_totals_extract_after', ['item' => $newItem, 'quote_item' => $item]);
             $items[] = $newItem;

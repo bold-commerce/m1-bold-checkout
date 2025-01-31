@@ -79,6 +79,12 @@ class Bold_Checkout_Api_Platform_Cart
             }
             $quote->setDataChanges(true);
             $quote->collectTotals();
+
+            if(!$quote->isVirtual() && !$quote->getShippingAddress()->getShippingMethod()) { 
+                $rate = $quote->getShippingAddress()->getShippingRatesCollection()->getFirstItem();
+                $quote->getShippingAddress()->setShippingMethod($rate->getCode());
+            }
+            
             if (!$config->isCheckoutTypeSelfHosted((int)$quote->getStore()->getWebsiteId())) {
                 $quote->save();
             }
