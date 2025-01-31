@@ -21,7 +21,7 @@ class Bold_Checkout_Service_Extractor_Quote_Totals_Item
             }
             $newItem = self::extractTotalsItem($item);
             Mage::dispatchEvent('bold_checkout_item_totals_extract_after', ['item' => $newItem, 'quote_item' => $item]);
-            $items[] = $newItem;
+            $items[] = $newItem->toArray();
         }
         return $items;
     }
@@ -30,35 +30,35 @@ class Bold_Checkout_Service_Extractor_Quote_Totals_Item
      * Extract quote totals item entity data into array.
      *
      * @param Mage_Sales_Model_Quote_Item $item
-     * @return stdClass
+     * @return Varien_Object
      * @throws Mage_Core_Model_Store_Exception
      */
     private static function extractTotalsItem(Mage_Sales_Model_Quote_Item $item)
     {
-        $lineItem = new stdClass();
+        $lineItem = new Varien_Object();
         $options = self::extractOptions($item);
         
-        $lineItem->item_id = (int)$item->getId();
-        $lineItem->price = self::getPrice($item);
-        $lineItem->base_price = self::getBasePrice($item);
-        $lineItem->qty = $item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty();
-        $lineItem->row_total = self::getRowTotal($item);
-        $lineItem->base_row_total = self::getBaseRowTotal($item);
-        $lineItem->row_total_with_discount = self::getRowTotalWithDiscount($item);
-        $lineItem->tax_amount = self::getTaxAmount($item);
-        $lineItem->base_tax_amount = self::getBaseTaxAmount($item);
-        $lineItem->tax_percent = self::getTaxPercent($item);
-        $lineItem->discount_amount = self::getDiscountAmount($item);
-        $lineItem->base_discount_amount = self::getBaseDiscountAmount($item);
-        $lineItem->discount_percent = self::getDiscountPercent($item);
-        $lineItem->price_incl_tax = self::getPriceIncludingTax($item);
-        $lineItem->base_price_incl_tax = self::getBasePriceIncludingTax($item);
-        $lineItem->row_total_incl_tax = self::getRowTotalIncludingTax($item);
-        $lineItem->base_row_total_incl_tax = self::getBaseRowTotalIncludingTax($item);
-        $lineItem->options = $options ? json_encode($options) : json_encode([]);
-        $lineItem->weee_tax_applied_amount = self::getWeeeTaxAppliedAmount($item);
-        $lineItem->weee_tax_applied = self::getWeeeTaxApplied($item);
-        $lineItem->name = $item->getName();
+        $lineItem->setItemId((int)$item->getId());
+        $lineItem->setPrice(self::getPrice($item));
+        $lineItem->setBasePrice(self::getBasePrice($item));
+        $lineItem->setQty($item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty());
+        $lineItem->setRowTotal(self::getRowTotal($item));
+        $lineItem->setBaseRowTotal(self::getBaseRowTotal($item));
+        $lineItem->setRowTotalWithDiscount(self::getRowTotalWithDiscount($item));
+        $lineItem->setTaxAmount(self::getTaxAmount($item));
+        $lineItem->setBaseTaxAmount(self::getBaseTaxAmount($item));
+        $lineItem->setTaxPercent(self::getTaxPercent($item));
+        $lineItem->setDiscountAmount(self::getDiscountAmount($item));
+        $lineItem->setBaseDiscountAmount(self::getBaseDiscountAmount($item));
+        $lineItem->setDiscountPercent(self::getDiscountPercent($item));
+        $lineItem->setPriceInclTax(self::getPriceIncludingTax($item));
+        $lineItem->setBasePriceInclTax(self::getBasePriceIncludingTax($item));
+        $lineItem->setRowTotalInclTax(self::getRowTotalIncludingTax($item));
+        $lineItem->setBaseRowTotalInclTax(self::getBaseRowTotalIncludingTax($item));
+        $lineItem->setOptions($options ? json_encode($options) : json_encode([]));
+        $lineItem->setWeeeTaxAppliedAmount(self::getWeeeTaxAppliedAmount($item));
+        $lineItem->setWeeeTaxApplied(self::getWeeeTaxApplied($item));
+        $lineItem->setName($item->getName());
 
         return $lineItem;
     }
