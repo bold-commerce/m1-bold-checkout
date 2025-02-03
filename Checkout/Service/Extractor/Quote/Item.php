@@ -25,25 +25,28 @@ class Bold_Checkout_Service_Extractor_Quote_Item
                 ? Mage::app()->getStore()->roundPrice($item->getParentItem()->getPrice())
                 : Mage::app()->getStore()->roundPrice($item->getPrice());
             $productData = current(Bold_Checkout_Service_Extractor_Product::extract([$item->getProduct()]));
-            $items[] = [
-                'item_id' => (int)$item->getId(),
-                'sku' => $item->getProduct()->getData('sku'),
-                'qty' => $item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty(),
-                'name' => $item->getName(),
-                'price' => $price,
-                'product_type' => $item->getProductType(),
-                'quote_id' => (string)$quote->getId(),
-                'product_option' => [
-                    'extension_attributes' => [
-                        'custom_options' => self::extractCustomOptions($item->getParentItem() ?: $item),
-                    ],
-                ],
+
+            $lineItem = new Varien_Object();
+            $lineItem->setItemId((int)$item->getId());
+            $lineItem->setSku($item->getProduct()->getData('sku'));
+            $lineItem->setQty($item->getParentItem() ? (int)$item->getParentItem()->getQty() : (int)$item->getQty());
+            $lineItem->setName($item->getName());
+            $lineItem->setPrice($price);
+            $lineItem->setProductType($item->getProductType());
+            $lineItem->setQuoteId((string)$quote->getId());
+            $lineItem->setProductOption([
                 'extension_attributes' => [
-                    'product' => $productData,
-                    'tax_details' => self::extractTaxDetails($item->getParentItem() ?: $item, $quote),
-                    'bold_discounts' => self::getDiscountData($item->getParentItem() ?: $item),
+                    'custom_options' => self::extractCustomOptions($item->getParentItem() ?: $item),
                 ],
-            ];
+            ]);
+            $lineItem->setExtensionAttributes([
+                'product' => $productData,
+                'tax_details' => self::extractTaxDetails($item->getParentItem() ?: $item, $quote),
+                'bold_discounts' => self::getDiscountData($item->getParentItem() ?: $item),
+            ]);
+
+            Mage::dispatchEvent('bold_checkout_quote_item_extract_after', ['item' => $lineItem, 'quote_item' => $item]);
+            $items[] = $lineItem->toArray();
         }
 
         return $items;
